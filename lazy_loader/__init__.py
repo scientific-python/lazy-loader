@@ -16,8 +16,8 @@ def attach(package_name, submodules=None, submod_attrs=None):
       from .foo import someattr
 
     The idea is to replace a package's `__getattr__`, `__dir__`, and
-    `__all__`, such that all imports work exactly the way they did
-    before, except that they are only imported when used.
+    `__all__`, such that all imports work exactly the way they would
+    with normal imports, except that the import occurs upon first use.
 
     The typical way to call this function, replacing the above imports, is::
 

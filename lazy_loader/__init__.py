@@ -1,5 +1,6 @@
 import importlib
 import importlib.util
+import types
 import os
 import sys
 
@@ -78,7 +79,7 @@ def attach(package_name, submodules=None, submod_attrs=None):
     return __getattr__, __dir__, list(__all__)
 
 
-def load(fullname):
+def load(fullname, error_on_import=False):
     """Return a lazily imported proxy for a module.
 
     We often see the following pattern::
@@ -112,6 +113,9 @@ def load(fullname):
 
           sp = lazy.load('scipy')  # import scipy as sp
           spla = lazy.load('scipy.linalg')  # import scipy.linalg as spla
+    error_on_import : bool
+        Whether to postpone raising import errors until the module is accessed.
+        If set to `True`, import errors are raised as soon as `load` is called.
 
     Returns
     -------
@@ -127,7 +131,16 @@ def load(fullname):
 
     spec = importlib.util.find_spec(fullname)
     if spec is None:
-        raise ModuleNotFoundError(f"No module name '{fullname}'")
+        if error_on_import:
+            raise ModuleNotFoundError(f"No module named '{fullname}'")
+        else:
+            spec = importlib.util.spec_from_loader(fullname, loader=None)
+            module = importlib.util.module_from_spec(spec)
+            tmp_loader = importlib.machinery.SourceFileLoader(module, path=None)
+            loader = DelayedImportErrorLoader(tmp_loader)
+            loader.exec_module(module)
+            # dont add to sys.modules. The module wasn't found.
+            return module
 
     module = importlib.util.module_from_spec(spec)
     sys.modules[fullname] = module
@@ -136,3 +149,22 @@ def load(fullname):
     loader.exec_module(module)
 
     return module
+
+
+class DelayedImportErrorLoader(importlib.util.LazyLoader):
+    def exec_module(self, module):
+        super().exec_module(module)
+        module.__class__ = DelayedImportErrorModule
+
+
+class DelayedImportErrorModule(types.ModuleType):
+    def __getattribute__(self, attr):
+        """Trigger a ModuleNotFoundError upon attribute access"""
+        spec = super().__getattribute__("__spec__")
+        # allows isinstance and type functions to work without raising error
+        if attr in ["__class__"]:
+            return super().__getattribute__("__class__")
+
+        raise ModuleNotFoundError(
+            f"No module named '{spec.name}'"
+        )

@@ -78,3 +78,9 @@ Use `lazy.load` to lazily import external libraries:
 ```python
 linalg = lazy.load('scipy.linalg')  # `linalg` will only be loaded when accessed
 ```
+
+You can also ask `lazy.load` to raise import errors as soon as it is called:
+
+```
+linalg = lazy.load('scipy.linalg', error_on_import=True)
+```

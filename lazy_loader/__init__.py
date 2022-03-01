@@ -1,3 +1,9 @@
+"""
+lazy_loader
+===========
+
+Makes it easy to load subpackages and functions on demand.
+"""
 import importlib
 import importlib.util
 import types

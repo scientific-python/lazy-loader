@@ -1,2 +1,29 @@
 *~
+# Byte-compiled / optimized / DLL files
 **/__pycache__
+*.py[cod]
+
+# Distribution / packaging
+dist/
+
+# Unit test / coverage reports
+.pytest_cache/
+
+# General
+.DS_Store
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IntelliJ project files
+.idea
+
+# Spyder project settings
+.spyderproject
+.spyproject

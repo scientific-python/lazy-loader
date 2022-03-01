@@ -6,9 +6,9 @@ Makes it easy to load subpackages and functions on demand.
 """
 import importlib
 import importlib.util
-import types
 import os
 import sys
+import types
 
 
 def attach(package_name, submodules=None, submod_attrs=None):
@@ -66,19 +66,17 @@ def attach(package_name, submodules=None, submod_attrs=None):
 
     def __getattr__(name):
         if name in submodules:
-            return importlib.import_module(f'{package_name}.{name}')
+            return importlib.import_module(f"{package_name}.{name}")
         elif name in attr_to_modules:
-            submod = importlib.import_module(
-                f'{package_name}.{attr_to_modules[name]}'
-            )
+            submod = importlib.import_module(f"{package_name}.{attr_to_modules[name]}")
             return getattr(submod, name)
         else:
-            raise AttributeError(f'No {package_name} attribute {name}')
+            raise AttributeError(f"No {package_name} attribute {name}")
 
     def __dir__():
         return __all__
 
-    if os.environ.get('EAGER_IMPORT', ''):
+    if os.environ.get("EAGER_IMPORT", ""):
         for attr in set(attr_to_modules.keys()) | submodules:
             __getattr__(attr)
 
@@ -171,6 +169,4 @@ class DelayedImportErrorModule(types.ModuleType):
         if attr in ["__class__"]:
             return super().__getattribute__("__class__")
 
-        raise ModuleNotFoundError(
-            f"No module named '{spec.name}'"
-        )
+        raise ModuleNotFoundError(f"No module named '{spec.name}'")

@@ -1,4 +1,6 @@
-`lazy_loader` makes it easy to load subpackages and functions on demand.
+![PyPI](https://img.shields.io/pypi/v/lazy-loader?style=for-the-badge)
+
+`lazy-loader` makes it easy to load subpackages and functions on demand.
 
 ## Motivation
 
@@ -6,6 +8,12 @@
 2. Allow external libraries to be imported only when used, improving import times.
 
 For a more detailed discussion, see [the SPEC](https://scientific-python.org/specs/spec-0001/).
+
+## Installation
+
+```
+pip install -U lazy-loader
+```
 
 ## Usage
 
@@ -15,12 +23,12 @@ Consider the `__init__.py` from [scikit-image](https://scikit-image.org):
 
 ```python
 subpackages = [
-    ...
+    ...,
     'filters',
     ...
 ]
 
-from lazy_loader import lazy
+import lazy_loader as lazy
 __getattr__, __dir__, _ = lazy.attach(__name__, subpackages)
 ```
 

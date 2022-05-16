@@ -50,7 +50,7 @@ from ..util import lazy
 
 __getattr__, __dir__, __all__ = lazy.attach(
     __name__,
-    submodules=['rank']
+    submodules=['rank'],
     submod_attrs={
         '_gaussian': ['gaussian', 'difference_of_gaussians'],
         'edges': ['sobel', 'scharr', 'prewitt', 'roberts',

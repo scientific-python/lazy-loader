@@ -10,8 +10,31 @@ import inspect
 import os
 import sys
 import types
+import warnings
 
 __all__ = ["attach", "load"]
+
+
+class DelayedImportWarning(Warning):
+    pass
+
+
+class DelayedImportErrorModule(types.ModuleType):
+    def __init__(self, frame_data, *args, **kwargs):
+        self.__frame_data = frame_data
+        super().__init__(*args, **kwargs)
+
+    def __getattr__(self, x):
+        if x in ("__class__", "__file__", "__frame_data"):
+            super().__getattr__(x)
+        else:
+            fd = self.__frame_data
+            raise ModuleNotFoundError(
+                f"No module named '{fd['spec']}'\n\n"
+                "This error is lazily reported, having originally occured in\n"
+                f'  File {fd["filename"]}, line {fd["lineno"]}, in {fd["function"]}\n\n'
+                f'----> {"".join(fd["code_context"]).strip()}'
+            )
 
 
 def attach(package_name, submodules=None, submod_attrs=None):
@@ -72,6 +95,14 @@ def attach(package_name, submodules=None, submod_attrs=None):
             return importlib.import_module(f"{package_name}.{name}")
         elif name in attr_to_modules:
             submod = importlib.import_module(f"{package_name}.{attr_to_modules[name]}")
+            if name == attr_to_modules[name]:
+                warnings.warn(
+                    DelayedImportWarning(
+                        f"Module attribute and module have same "
+                        f"name: `{name}`; will likely cause conflicts "
+                        "when accessing attribute."
+                    )
+                )
             return getattr(submod, name)
         else:
             raise AttributeError(f"No {package_name} attribute {name}")
@@ -84,24 +115,6 @@ def attach(package_name, submodules=None, submod_attrs=None):
             __getattr__(attr)
 
     return __getattr__, __dir__, list(__all__)
-
-
-class DelayedImportErrorModule(types.ModuleType):
-    def __init__(self, frame_data, *args, **kwargs):
-        self.__frame_data = frame_data
-        super().__init__(*args, **kwargs)
-
-    def __getattr__(self, x):
-        if x in ("__class__", "__file__", "__frame_data"):
-            super().__getattr__(x)
-        else:
-            fd = self.__frame_data
-            raise ModuleNotFoundError(
-                f"No module named '{fd['spec']}'\n\n"
-                "This error is lazily reported, having originally occured in\n"
-                f'  File {fd["filename"]}, line {fd["lineno"]}, in {fd["function"]}\n\n'
-                f'----> {"".join(fd["code_context"]).strip()}'
-            )
 
 
 def load(fullname, error_on_import=False):

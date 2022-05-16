@@ -94,3 +94,11 @@ def test_lazy_attach():
     for k, v in expected.items():
         if v is not None:
             assert locls[k] == v
+
+
+def test_attr_same_as_module():
+    __getattr__, __lazy_dir__, __all__ = lazy.attach(
+        "tests", submod_attrs={"fake_func": ["fake_func"]}
+    )
+    with pytest.warns(lazy.DelayedImportWarning):
+        __getattr__("fake_func")

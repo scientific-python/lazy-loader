@@ -34,4 +34,4 @@ jobs:
 
     - name: Test
       run: |
-        pytest
+        PYTHONPATH=. pytest

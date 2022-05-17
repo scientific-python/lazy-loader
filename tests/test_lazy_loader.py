@@ -94,3 +94,12 @@ def test_lazy_attach():
     for k, v in expected.items():
         if v is not None:
             assert locls[k] == v
+
+
+def test_attach_same_module_and_attr_name():
+    import fake_pkg
+
+    # Grab attribute twice, to ensure that importing it does not
+    # override function by module
+    assert isinstance(fake_pkg.some_func, types.FunctionType)
+    assert isinstance(fake_pkg.some_func, types.FunctionType)

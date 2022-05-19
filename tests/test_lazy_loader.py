@@ -103,3 +103,8 @@ def test_attach_same_module_and_attr_name():
     # override function by module
     assert isinstance(fake_pkg.some_func, types.FunctionType)
     assert isinstance(fake_pkg.some_func, types.FunctionType)
+
+    # Ensure imports from submodule still work
+    from fake_pkg.some_func import some_func
+
+    assert isinstance(some_func, types.FunctionType)

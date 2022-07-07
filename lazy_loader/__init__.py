@@ -4,6 +4,7 @@ lazy_loader
 
 Makes it easy to load subpackages and functions on demand.
 """
+import ast
 import importlib
 import importlib.util
 import inspect
@@ -11,7 +12,7 @@ import os
 import sys
 import types
 
-__all__ = ["attach", "load"]
+__all__ = ["attach", "load", "attach_stub"]
 
 
 def attach(package_name, submodules=None, submod_attrs=None):
@@ -189,3 +190,61 @@ def load(fullname, error_on_import=False):
     loader.exec_module(module)
 
     return module
+
+
+class _StubVisitor(ast.NodeVisitor):
+    """AST visitor to parse a stub file for submodules and submod_attrs."""
+
+    def __init__(self):
+        self._submodules = set()
+        self._submod_attrs = {}
+
+    def visit_ImportFrom(self, node: ast.ImportFrom):
+        if node.level != 1:
+            raise ValueError(
+                "Only within-module imports are supported (`from .* import`)"
+            )
+        if node.module:
+            attrs: list = self._submod_attrs.setdefault(node.module, [])
+            attrs.extend(alias.name for alias in node.names)
+        else:
+            self._submodules.update(alias.name for alias in node.names)
+
+
+def attach_stub(package_name: str, filename: str):
+    """Attach lazily loaded submodules, functions from a type stub.
+
+    This is a variant on ``attach`` that will parse a `.pyi` stub file to
+    infer ``submodules`` and ``submod_attrs``. This allows static type checkers
+    to find imports, while still providing lazy loading at runtime.
+
+    Parameters
+    ----------
+    package_name : str
+        Typically use ``__name__``.
+    filename : str
+        Path to `.py` file which has an adjacent `.pyi` file.
+        Typically use ``__file__``.
+
+    Returns
+    -------
+    __getattr__, __dir__, __all__
+        The same output as ``attach``.
+
+    Raises
+    ------
+    ValueError
+        If a stub file is not found for `filename`, or if the stubfile is formmated
+        incorrectly (e.g. if it contains an relative import from outside of the module)
+    """
+    stubfile = filename if filename.endswith("i") else f"{filename}i"
+
+    if not os.path.exists(stubfile):
+        raise ValueError(f"Cannot load imports from non-existent stub {stubfile!r}")
+
+    with open(stubfile) as f:
+        stub_node = ast.parse(f.read())
+
+    visitor = _StubVisitor()
+    visitor.visit(stub_node)
+    return attach(package_name, visitor._submodules, visitor._submod_attrs)

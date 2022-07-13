@@ -1,5 +1,4 @@
-import lazy_loader as lazy
+from lazy_loader import lazy_import
 
-__getattr__, __lazy_dir__, __all__ = lazy.attach(
-    __name__, submod_attrs={"some_func": ["some_func"]}
-)
+with lazy_import():
+    from . import some_func  # noqa: F401

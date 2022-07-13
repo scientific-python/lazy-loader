@@ -4,27 +4,21 @@ import types
 import pytest
 
 import lazy_loader as lazy
+from lazy_loader import lazy_import
 
 
-def test_lazy_import_basics():
-    math = lazy.load("math")
-    anything_not_real = lazy.load("anything_not_real")
+def test_import_builtin():
+    with lazy_import():
+        import math
 
     # Now test that accessing attributes does what it should
     assert math.sin(math.pi) == pytest.approx(0, 1e-6)
-    # poor-mans pytest.raises for testing errors on attribute access
-    try:
-        anything_not_real.pi
-        assert False  # Should not get here
-    except ModuleNotFoundError:
-        pass
-    assert isinstance(anything_not_real, lazy.DelayedImportErrorModule)
-    # see if it changes for second access
-    try:
-        anything_not_real.pi
-        assert False  # Should not get here
-    except ModuleNotFoundError:
-        pass
+
+
+def test_import_error():
+    with pytest.raises(ModuleNotFoundError):
+        with lazy_import():
+            import anything_not_real  # noqa: F401
 
 
 def test_lazy_import_impact_on_sys_modules():

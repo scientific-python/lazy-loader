@@ -70,6 +70,43 @@ from .edges import (sobel, scharr, prewitt, roberts,
 
 Except that all subpackages (such as `rank`) and functions (such as `sobel`) are loaded upon access.
 
+### Lazily load subpackages and functions from type stubs
+
+Because static type checkers and IDEs will likely be unable to find your
+dynamically declared imports, you can use a [type
+stub](https://mypy.readthedocs.io/en/stable/stubs.html) (`.pyi` file) to declare
+the imports. However, if used with the above pattern, this results in code
+duplication, as you now need to declare your submodules and attributes in two places.
+
+You can infer the `submodules` and `submod_attrs` arguments (explicitly provided
+above to `lazy.attach`) from a stub  adjacent to the `.py` file by using the
+`lazy.attach_stub` function.
+
+Carrying on with the example above:
+
+The `skimage/filters/__init__.py` module would be declared as such:
+
+```python
+from ..util import lazy
+
+__getattr__, __dir__, __all__ = lazy.attach_stub(__name__, __file__)
+```
+
+... and the adjacent `skimage/filters/__init__.pyi` stub would contain:
+
+```python
+from . import rank
+from ._gaussian import gaussian, difference_of_gaussians
+from .edges import (sobel, scharr, prewitt, roberts,
+                    laplace, farid)
+```
+
+Note that in order for this to work, you must be sure to include the `.pyi`
+files in your package distribution. For example, with setuptools, you would need
+to [set the `package_data`
+option](https://setuptools.pypa.io/en/latest/userguide/datafiles.html#package-data)
+to include `*.pyi` files.
+
 ### Early failure
 
 With lazy loading, missing imports no longer fail upon loading the

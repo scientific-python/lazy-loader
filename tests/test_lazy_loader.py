@@ -108,3 +108,39 @@ def test_attach_same_module_and_attr_name():
     from fake_pkg.some_func import some_func
 
     assert isinstance(some_func, types.FunctionType)
+
+
+FAKE_STUB = """
+from . import rank
+from ._gaussian import gaussian
+from .edges import sobel, scharr, prewitt, roberts
+"""
+
+
+def test_stub_loading(tmp_path):
+    stub = tmp_path / "stub.pyi"
+    stub.write_text(FAKE_STUB)
+    _get, _dir, _all = lazy.attach_stub("my_module", str(stub))
+    expect = {"gaussian", "sobel", "scharr", "prewitt", "roberts", "rank"}
+    assert set(_dir()) == set(_all) == expect
+
+
+def test_stub_loading_parity():
+    import fake_pkg
+
+    from_stub = lazy.attach_stub(fake_pkg.__name__, fake_pkg.__file__)
+    stub_getter, stub_dir, stub_all = from_stub
+    assert stub_all == fake_pkg.__all__
+    assert stub_dir() == fake_pkg.__lazy_dir__()
+    assert stub_getter("some_func") == fake_pkg.some_func
+
+
+def test_stub_loading_errors(tmp_path):
+    stub = tmp_path / "stub.pyi"
+    stub.write_text("from ..mod import func\n")
+
+    with pytest.raises(ValueError, match="Only within-module imports are supported"):
+        lazy.attach_stub("name", str(stub))
+
+    with pytest.raises(ValueError, match="Cannot load imports from non-existent stub"):
+        lazy.attach_stub("name", "not a file")

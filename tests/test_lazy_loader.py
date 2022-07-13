@@ -21,18 +21,25 @@ def test_import_error():
             import anything_not_real  # noqa: F401
 
 
-def test_lazy_import_impact_on_sys_modules():
-    math = lazy.load("math")
-    anything_not_real = lazy.load("anything_not_real")
+def test_builtin_is_in_sys_modules():
+    with lazy_import():
+        import math
 
     assert isinstance(math, types.ModuleType)
     assert "math" in sys.modules
-    assert isinstance(anything_not_real, lazy.DelayedImportErrorModule)
-    assert "anything_not_real" not in sys.modules
 
+    math.pi  # trigger load of math
+
+    assert isinstance(math, types.ModuleType)
+    assert "math" in sys.modules
+
+
+def test_non_builtin_is_in_sys_modules():
     # only do this if numpy is installed
     pytest.importorskip("numpy")
-    np = lazy.load("numpy")
+    with lazy_import():
+        import numpy as np
+
     assert isinstance(np, types.ModuleType)
     assert "numpy" in sys.modules
 

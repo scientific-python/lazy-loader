@@ -4,6 +4,8 @@ lazy_loader
 
 Makes it easy to load subpackages and functions on demand.
 """
+from __future__ import annotations
+
 import ast
 import importlib
 import importlib.util
@@ -11,8 +13,10 @@ import inspect
 import os
 import sys
 import types
+from contextlib import contextmanager
+from importlib.util import LazyLoader
 
-__all__ = ["attach", "load", "attach_stub"]
+__all__ = ["attach", "load", "attach_stub", "lazy_loader"]
 
 
 def attach(package_name, submodules=None, submod_attrs=None):
@@ -248,3 +252,35 @@ def attach_stub(package_name: str, filename: str):
     visitor = _StubVisitor()
     visitor.visit(stub_node)
     return attach(package_name, visitor._submodules, visitor._submod_attrs)
+
+
+class LazyFinder:
+    @classmethod
+    def find_spec(cls, name, path, target=None) -> LazyLoader | None:
+        """Finds a spec with every other Finder in sys.meta_path,
+        and, if found, wraps it in LazyLoader to defer loading.
+        """
+        non_lazy_finders = (f for f in sys.meta_path if f is not cls)
+        for finder in non_lazy_finders:
+            spec = finder.find_spec(name, path, target)
+            if spec is not None:
+                spec.loader = LazyLoader(spec.loader)
+                break
+        return spec
+
+
+@contextmanager
+def lazy_import():
+    """A context manager to defer imports until first access.
+
+    >>> with lazy_import():
+    ...     import math  # lazy
+    ...
+    >>> math.inf  # executes the math module.
+    inf
+
+    lazy_import inserts, and then removes, LazyFinder to the start of sys.meta_path.
+    """
+    sys.meta_path.insert(0, LazyFinder)
+    yield
+    sys.meta_path.pop(0)

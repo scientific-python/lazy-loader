@@ -21,6 +21,15 @@ def test_import_error():
             import anything_not_real  # noqa: F401
 
 
+def test_import_nonbuiltins():
+    pytest.importorskip("numpy")
+
+    with lazy_import():
+        import numpy as np
+
+    assert np.sin(np.pi) == pytest.approx(0, 1e-6)
+
+
 def test_builtin_is_in_sys_modules():
     with lazy_import():
         import math
@@ -47,25 +56,6 @@ def test_non_builtin_is_in_sys_modules():
 
     assert isinstance(np, types.ModuleType)
     assert "numpy" in sys.modules
-
-
-def test_lazy_import_nonbuiltins():
-    sp = lazy.load("scipy")
-    np = lazy.load("numpy")
-    if isinstance(sp, lazy.DelayedImportErrorModule):
-        try:
-            sp.pi
-            assert False
-        except ModuleNotFoundError:
-            pass
-    elif isinstance(np, lazy.DelayedImportErrorModule):
-        try:
-            np.sin(np.pi)
-            assert False
-        except ModuleNotFoundError:
-            pass
-    else:
-        assert np.sin(sp.pi) == pytest.approx(0, 1e-6)
 
 
 def test_lazy_attach():

@@ -8,6 +8,7 @@ import ast
 import importlib
 import importlib.util
 import inspect
+import linecache
 import os
 import sys
 import types
@@ -248,3 +249,61 @@ def attach_stub(package_name: str, filename: str):
     visitor = _StubVisitor()
     visitor.visit(stub_node)
     return attach(package_name, visitor._submodules, visitor._submod_attrs)
+
+
+class _LazyContextBlocker(RuntimeError):
+    pass
+
+
+class lazy_imports(object):
+    """Crazy context manager that will block imports and make them lazy.
+
+    import lazy_loader
+
+    with lazy_loader.lazy_imports() as stop:
+        raise stop
+        from ._mod import some_func
+    """
+
+    def __enter__(self):
+        return _LazyContextBlocker(self)
+
+    def __exit__(self, type, value, tb):
+        if type is not _LazyContextBlocker:
+            # something other than raise _LazyContextBlocker happened
+            return False
+
+        # grab the source code from the file using this context and parse it
+        last_frame = inspect.currentframe().f_back
+        source_lines = linecache.getlines(last_frame.f_code.co_filename)
+        module = ast.parse("".join(source_lines))
+
+        # get just the with lazy_imports block from the parsed ast
+        with_node = None
+        cls_name = self.__class__.__name__
+        for node in module.body:
+            if isinstance(node, ast.With):
+                for item in node.items:
+                    if isinstance(item.context_expr, ast.Call):
+                        func = item.context_expr.func
+                        if isinstance(func, ast.Attribute) and func.attr == cls_name:
+                            with_node = node
+                            break
+                        if isinstance(func, ast.Name) and func.id == cls_name:
+                            with_node = node
+                            break
+        if not with_node:
+            raise RuntimeError(f"{cls_name} context not found")
+
+        # parse that block just as if it were a regular stub
+        visitor = _StubVisitor()
+        visitor.visit(with_node)
+
+        # inject the outputs into the module globals
+        package_name = last_frame.f_globals["__name__"]
+        g, d, a = attach(package_name, visitor._submodules, visitor._submod_attrs)
+        last_frame.f_globals["__getattr__"] = g
+        last_frame.f_globals["__dir__"] = d
+        last_frame.f_globals["__all__"] = a
+
+        return True  # ignore the raised _LazyContextBlocker

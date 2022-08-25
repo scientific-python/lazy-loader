@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "lazy_loader"
-version = "0.1rc2"
+version = "0.1rc2.dev0"
 requires-python = ">=3.8"
 authors = [{name = "The Scientific Python Group"}]
 readme = "README.md"

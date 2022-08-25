@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - '*.*'
+      - "*.*"
 
 jobs:
   release:
@@ -14,8 +14,8 @@ jobs:
       - name: Setup Python 3.10
         uses: actions/setup-python@v2
         with:
-          python-version: '3.10'
-          architecture: 'x64'
+          python-version: "3.10"
+          architecture: "x64"
 
       - name: Install flit
         run: pip install flit

@@ -79,7 +79,7 @@ the imports. However, if used with the above pattern, this results in code
 duplication, as you now need to declare your submodules and attributes in two places.
 
 You can infer the `submodules` and `submod_attrs` arguments (explicitly provided
-above to `lazy.attach`) from a stub  adjacent to the `.py` file by using the
+above to `lazy.attach`) from a stub adjacent to the `.py` file by using the
 `lazy.attach_stub` function.
 
 Carrying on with the example above:
@@ -110,7 +110,7 @@ to include `*.pyi` files.
 ### Early failure
 
 With lazy loading, missing imports no longer fail upon loading the
-library.  During development and testing, you can set the `EAGER_IMPORT`
+library. During development and testing, you can set the `EAGER_IMPORT`
 environment variable to disable lazy loading.
 
 ### External libraries

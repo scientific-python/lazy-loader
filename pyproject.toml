@@ -21,7 +21,7 @@ dynamic = ["description"]
 
 
 [project.optional-dependencies]
-test = ["pytest >= 7"]
+test = ["pytest >= 7.1", "pytest-cov >= 3.0", "codecov >= 2.1"]
 lint = ["pre-commit >= 2.20"]
 
 [project.urls]

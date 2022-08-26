@@ -37,5 +37,5 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        files: \.(html|md|yml|yaml)
+        files: \.(html|md|yml|yaml|toml)
         args: [--prose-wrap=preserve]

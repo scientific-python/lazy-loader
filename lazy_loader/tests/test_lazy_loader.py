@@ -97,7 +97,7 @@ def test_lazy_attach():
 
 
 def test_attach_same_module_and_attr_name():
-    import fake_pkg
+    from lazy_loader.tests import fake_pkg
 
     # Grab attribute twice, to ensure that importing it does not
     # override function by module
@@ -105,7 +105,7 @@ def test_attach_same_module_and_attr_name():
     assert isinstance(fake_pkg.some_func, types.FunctionType)
 
     # Ensure imports from submodule still work
-    from fake_pkg.some_func import some_func
+    from lazy_loader.tests.fake_pkg.some_func import some_func
 
     assert isinstance(some_func, types.FunctionType)
 
@@ -126,7 +126,7 @@ def test_stub_loading(tmp_path):
 
 
 def test_stub_loading_parity():
-    import fake_pkg
+    from lazy_loader.tests import fake_pkg
 
     from_stub = lazy.attach_stub(fake_pkg.__name__, fake_pkg.__file__)
     stub_getter, stub_dir, stub_all = from_stub

@@ -1,27 +1,28 @@
 [build-system]
-requires = ["flit_core >=3.3,<4"]
+requires = ["flit_core >=3.6,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
 name = "lazy_loader"
-version = "0.1rc2"
+version = "0.1rc2.dev0"
 requires-python = ">=3.7"
-authors = [{name = "The Scientific Python Group"}]
+authors = [{name = "Scientific Python Developers"}]
 readme = "README.md"
 license = {file = "LICENSE.md"}
-classifiers = ["License :: OSI Approved :: BSD License"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+]
 dynamic = ["description"]
 
+
 [project.optional-dependencies]
-dev = [
-    "flit"
-]
-test = [
-    "pytest",
-    "black",
-    "pre-commit",
-    "flake8"
-]
+test = ["pytest >= 7.1", "pytest-cov >= 3.0", "codecov >= 2.1"]
+lint = ["pre-commit >= 2.20"]
 
 [project.urls]
 Home = "https://scientific-python.org/specs/spec-0001/"

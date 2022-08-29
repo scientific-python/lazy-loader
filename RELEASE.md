@@ -4,11 +4,11 @@
 
 Example `version`
 
-- 1.8.dev0 \# development version of 1.8 (release candidate 1)
-- 1.8rc1 \# 1.8 release candidate 1
-- 1.8rc2.dev0 \# development version of 1.8 (release candidate 2)
-- 1.8 \# 1.8 release
-- 1.9.dev0 \# development version of 1.9 (release candidate 1)
+- 1.8.dev0 # development version of 1.8 (release candidate 1)
+- 1.8rc1 # 1.8 release candidate 1
+- 1.8rc2.dev0 # development version of 1.8 (release candidate 2)
+- 1.8 # 1.8 release
+- 1.9.dev0 # development version of 1.9 (release candidate 1)
 
 ## Process
 
@@ -24,7 +24,7 @@ Example `version`
       git add pyproject.toml CHANGELOG.md
       git commit -m 'Designate <version> release'
 
-- Add the version number (e.g., [v1.2.0]{.title-ref}) as a tag in git:
+- Add the version number (e.g., `1.2.0`) as a tag in git:
 
       git tag -s [-u <key-id>] v<version> -m 'signed <version> tag'
 

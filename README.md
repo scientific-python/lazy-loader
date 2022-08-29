@@ -1,6 +1,6 @@
-![PyPI](https://img.shields.io/pypi/v/lazy-loader?style=for-the-badge)
+![PyPI](https://img.shields.io/pypi/v/lazy_loader?style=for-the-badge)
 
-`lazy-loader` makes it easy to load subpackages and functions on demand.
+`lazy_loader` makes it easy to load subpackages and functions on demand.
 
 ## Motivation
 
@@ -12,7 +12,7 @@ For a more detailed discussion, see [the SPEC](https://scientific-python.org/spe
 ## Installation
 
 ```
-pip install -U lazy-loader
+pip install -U lazy_loader
 ```
 
 ## Usage

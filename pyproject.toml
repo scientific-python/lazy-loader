@@ -27,7 +27,7 @@ lint = ["pre-commit >= 2.20"]
 
 [project.urls]
 Home = "https://scientific-python.org/specs/spec-0001/"
-Source = "https://github.com/scientific-python/lazy-loader"
+Source = "https://github.com/scientific-python/lazy_loader"
 
 [tool.flit.sdist]
 exclude = ["tests/*"]

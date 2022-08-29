@@ -1,4 +1,6 @@
-![PyPI](https://img.shields.io/pypi/v/lazy_loader?style=for-the-badge)
+[![PyPI](https://img.shields.io/pypi/v/lazy_loader)](https://pypi.org/project/lazy_loader/)
+[![Test status](https://github.com/scientific-python/lazy_loader/workflows/test/badge.svg?branch=main)](https://github.com/scientific-python/lazy_loader/actions?query=workflow%3A%22test%22)
+[![Test coverage](https://codecov.io/gh/scientific-python/lazy_loader/branch/main/graph/badge.svg)](https://app.codecov.io/gh/scientific-python/lazy_loader/branch/main)
 
 `lazy_loader` makes it easy to load subpackages and functions on demand.
 

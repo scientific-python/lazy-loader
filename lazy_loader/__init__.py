@@ -66,7 +66,7 @@ def attach(package_name, submodules=None, submod_attrs=None):
         attr: mod for mod, attrs in submod_attrs.items() for attr in attrs
     }
 
-    __all__ = list(submodules | attr_to_modules.keys())
+    __all__ = list(sorted(submodules | attr_to_modules.keys()))
 
     def __getattr__(name):
         if name in submodules:

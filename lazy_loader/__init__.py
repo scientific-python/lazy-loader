@@ -237,7 +237,7 @@ def attach_stub(package_name: str, filename: str):
         If a stub file is not found for `filename`, or if the stubfile is formmated
         incorrectly (e.g. if it contains an relative import from outside of the module)
     """
-    stubfile = filename if filename.endswith("i") else f"{filename}i"
+    stubfile = filename if filename.endswith("i") else f"{os.path.splitext(filename)[0]}.pyi"
 
     if not os.path.exists(stubfile):
         raise ValueError(f"Cannot load imports from non-existent stub {stubfile!r}")

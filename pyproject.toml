@@ -1,5 +1,5 @@
 [build-system]
-requires = ["flit_core >=3.7,<4"]
+requires = ["flit_core >=3.8,<4"]
 build-backend = "flit_core.buildapi"
 
 [project]
@@ -23,8 +23,8 @@ dynamic = ["description"]
 
 
 [project.optional-dependencies]
-test = ["pytest >= 7.1", "pytest-cov >= 3.0", "codecov >= 2.1"]
-lint = ["pre-commit >= 2.20"]
+test = ["pytest >= 7.2", "pytest-cov >= 4.0", "codecov >= 2.1"]
+lint = ["pre-commit >= 3.1"]
 
 [project.urls]
 Home = "https://scientific-python.org/specs/spec-0001/"

@@ -30,4 +30,6 @@ jobs:
           python -m pytest --cov=lazy_loader --durations=10
           # Tests fail if using `--doctest-modules`. I.e.,
           # python -m pytest --cov=lazy_loader --doctest-modules --durations=20
-          codecov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3

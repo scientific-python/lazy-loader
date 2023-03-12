@@ -49,22 +49,16 @@ def test_lazy_import_impact_on_sys_modules():
 
 
 def test_lazy_import_nonbuiltins():
-    sp = lazy.load("scipy")
     np = lazy.load("numpy")
+    sp = lazy.load("scipy")
+    if not isinstance(np, lazy.DelayedImportErrorModule):
+        assert np.sin(np.pi) == pytest.approx(0, 1e-6)
     if isinstance(sp, lazy.DelayedImportErrorModule):
         try:
             sp.pi
             assert False
         except ModuleNotFoundError:
             pass
-    elif isinstance(np, lazy.DelayedImportErrorModule):
-        try:
-            np.sin(np.pi)
-            assert False
-        except ModuleNotFoundError:
-            pass
-    else:
-        assert np.sin(sp.pi) == pytest.approx(0, 1e-6)
 
 
 def test_lazy_attach():

@@ -77,16 +77,15 @@ Except that all subpackages (such as `rank`) and functions (such as `sobel`) are
 Static type checkers and IDEs cannot infer type information from
 lazily loaded imports. As a workaround you can load [type
 stubs](https://mypy.readthedocs.io/en/stable/stubs.html) (`.pyi`
-files) with `lazy.attach_stub`.
+files) with `lazy.attach_stub`:
 
 ```python 
 import lazy_loader as lazy
 __getattr__, __dir__, _ = lazy.attach_stub(__name__, "subpackages.pyi")
 ```
 
-In such scenario the `lazy_loader` determine imports base on `.pyi`, 
-so `.pyi` files are then required not only for type checking but also in runtime. 
-(during freezing app that uses library using `lazy_loader` it is required to collect also `.pyi` files)
+Note that, since imports are now defined in `.pyi` files, those
+are not only necessary for type checking but also at runtime.
 
 The SPEC [describes this workaround in more
 detail](https://scientific-python.org/specs/spec-0001/#type-checkers).

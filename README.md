@@ -79,7 +79,7 @@ lazily loaded imports. As a workaround you can load [type
 stubs](https://mypy.readthedocs.io/en/stable/stubs.html) (`.pyi`
 files) with `lazy.attach_stub`:
 
-```python 
+```python
 import lazy_loader as lazy
 __getattr__, __dir__, _ = lazy.attach_stub(__name__, "subpackages.pyi")
 ```

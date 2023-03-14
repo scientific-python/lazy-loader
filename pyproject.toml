@@ -21,6 +21,10 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 description = "Makes it easy to load subpackages and functions on demand."
+dependencies = [
+  "packaging",
+  "importlib_metadata; python_version < '3.9'",
+]
 
 [project.optional-dependencies]
 test = ["pytest >= 7.4", "pytest-cov >= 4.1"]

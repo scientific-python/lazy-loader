@@ -13,6 +13,11 @@ import sys
 import types
 import warnings
 
+try:
+    import importlib_metadata
+except ImportError:
+    import importlib.metadata as importlib_metadata
+
 __all__ = ["attach", "load", "attach_stub"]
 
 
@@ -99,17 +104,18 @@ def attach(package_name, submodules=None, submod_attrs=None):
 
 
 class DelayedImportErrorModule(types.ModuleType):
-    def __init__(self, frame_data, *args, **kwargs):
+    def __init__(self, frame_data, *args, message=None, **kwargs):
         self.__frame_data = frame_data
+        self.__message = message or f"No module named '{frame_data['spec']}'"
         super().__init__(*args, **kwargs)
 
     def __getattr__(self, x):
-        if x in ("__class__", "__file__", "__frame_data"):
+        if x in ("__class__", "__file__", "__frame_data", "__message"):
             super().__getattr__(x)
         else:
             fd = self.__frame_data
             raise ModuleNotFoundError(
-                f"No module named '{fd['spec']}'\n\n"
+                f"{self.__message}\n\n"
                 "This error is lazily reported, having originally occured in\n"
                 f'  File {fd["filename"]}, line {fd["lineno"]}, in {fd["function"]}\n\n'
                 f'----> {"".join(fd["code_context"] or "").strip()}'
@@ -185,20 +191,33 @@ def load(fullname, error_on_import=False):
         warnings.warn(msg, RuntimeWarning)
 
     spec = importlib.util.find_spec(fullname)
+    return _module_from_spec(
+        spec,
+        fullname,
+        f"No module named '{fullname}'",
+        error_on_import,
+    )
+
+
+def _module_from_spec(spec, fullname, failure_message, error_on_import):
+    """Return lazy module, DelayedImportErrorModule, or raise error"""
     if spec is None:
         if error_on_import:
-            raise ModuleNotFoundError(f"No module named '{fullname}'")
+            raise ModuleNotFoundError(failure_message)
         else:
             try:
-                parent = inspect.stack()[1]
+                parent = inspect.stack()[2]
                 frame_data = {
-                    "spec": fullname,
                     "filename": parent.filename,
                     "lineno": parent.lineno,
                     "function": parent.function,
                     "code_context": parent.code_context,
                 }
-                return DelayedImportErrorModule(frame_data, "DelayedImportErrorModule")
+                return DelayedImportErrorModule(
+                    frame_data,
+                    "DelayedImportErrorModule",
+                    message=failure_message,
+                )
             finally:
                 del parent
 
@@ -269,3 +288,40 @@ def attach_stub(package_name: str, filename: str):
     visitor = _StubVisitor()
     visitor.visit(stub_node)
     return attach(package_name, visitor._submodules, visitor._submod_attrs)
+
+
+def load_requirement(requirement, fullname=None, error_on_import=False):
+    # Old style lazy loading to avoid polluting sys.modules
+    import packaging.requirements
+
+    req = packaging.requirements.Requirement(requirement)
+
+    if fullname is None:
+        fullname = req.name
+
+    not_found_msg = f"No module named '{fullname}'"
+
+    module = sys.modules.get(fullname)
+    have_mod = module is not None
+    if not have_mod:
+        spec = importlib.util.find_spec(fullname)
+        have_mod = spec is not None
+
+    if have_mod and req.specifier:
+        # Note: req.name is the distribution name, not the module name
+        try:
+            version = importlib_metadata.version(req.name)
+        except importlib_metadata.PackageNotFoundError as e:
+            raise ValueError(
+                f"Found module '{fullname}' but cannot test requirement '{req}'. "
+                "Requirements must match distribution name, not module name."
+            ) from e
+        have_mod = any(req.specifier.filter((version,)))
+        if not have_mod:
+            spec = None
+            not_found_msg = f"No distribution can be found matching '{req}'"
+
+    if have_mod and module is not None:
+        return module, have_mod
+
+    return _module_from_spec(spec, fullname, not_found_msg, error_on_import), have_mod

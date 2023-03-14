@@ -1,10 +1,18 @@
 import importlib
 import sys
 import types
+from unittest import mock
 
 import pytest
 
 import lazy_loader as lazy
+
+try:
+    import importlib_metadata  # noqa
+
+    have_importlib_metadata = True
+except ImportError:
+    have_importlib_metadata = False
 
 
 def test_lazy_import_basics():
@@ -149,3 +157,32 @@ def test_stub_loading_errors(tmp_path):
 
     with pytest.raises(ValueError, match="Cannot load imports from non-existent stub"):
         lazy.attach_stub("name", "not a file")
+
+
+def test_require_kwarg():
+    dot = "_" if have_importlib_metadata else "."
+    # Test with a module that definitely exists, behavior hinges on requirement
+    with mock.patch(f"importlib{dot}metadata.version") as version:
+        version.return_value = "1.0.0"
+        math = lazy.load("math", require="somepkg >= 2.0")
+        assert isinstance(math, lazy.DelayedImportErrorModule)
+
+        math = lazy.load("math", require="somepkg >= 1.0")
+        assert math.sin(math.pi) == pytest.approx(0, 1e-6)
+
+        # We can fail even after a successful import
+        math = lazy.load("math", require="somepkg >= 2.0")
+        assert isinstance(math, lazy.DelayedImportErrorModule)
+
+    # When a module can be loaded but the version can't be checked,
+    # raise a ValueError
+    with pytest.raises(ValueError):
+        lazy.load("math", require="somepkg >= 1.0")
+
+
+def test_have_module():
+    math = lazy.load("math")
+    anything_not_real = lazy.load("anything_not_real")
+
+    assert lazy.have_module(math)
+    assert not lazy.have_module(anything_not_real)

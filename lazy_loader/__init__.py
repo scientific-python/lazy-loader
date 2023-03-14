@@ -60,18 +60,16 @@ def attach(package_name, submodules=None, submod_attrs=None):
     if submodules is None:
         submodules = set()
     else:
-        submodules = set(submodules)
+        submodules = set(submodules) | submod_attrs.keys()
 
     attr_to_modules = {
         attr: mod for mod, attrs in submod_attrs.items() for attr in attrs
     }
 
-    __all__ = list(sorted(submodules | attr_to_modules.keys()))
+    __all__ = list(sorted(attr_to_modules.keys() | submodules))
 
     def __getattr__(name):
-        if name in submodules:
-            return importlib.import_module(f"{package_name}.{name}")
-        elif name in attr_to_modules:
+        if name in attr_to_modules:
             submod_path = f"{package_name}.{attr_to_modules[name]}"
             submod = importlib.import_module(submod_path)
             attr = getattr(submod, name)
@@ -84,6 +82,8 @@ def attach(package_name, submodules=None, submod_attrs=None):
                 pkg.__dict__[name] = attr
 
             return attr
+        elif name in submodules:
+            return importlib.import_module(f"{package_name}.{name}")
         else:
             raise AttributeError(f"No {package_name} attribute {name}")
 

@@ -115,7 +115,7 @@ def test_stub_loading(tmp_path):
     stub = tmp_path / "stub.pyi"
     stub.write_text(FAKE_STUB)
     _get, _dir, _all = lazy.attach_stub("my_module", str(stub))
-    expect = {"gaussian", "sobel", "scharr", "prewitt", "roberts", "rank"}
+    expect = {"gaussian", "sobel", "scharr", "prewitt", "roberts", "rank", "_gaussian", "edges"}
     assert set(_dir()) == set(_all) == expect
 
 

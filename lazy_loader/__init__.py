@@ -104,9 +104,9 @@ def attach(package_name, submodules=None, submod_attrs=None):
 
 
 class DelayedImportErrorModule(types.ModuleType):
-    def __init__(self, frame_data, *args, message=None, **kwargs):
+    def __init__(self, frame_data, *args, message, **kwargs):
         self.__frame_data = frame_data
-        self.__message = message or f"No module named '{frame_data['spec']}'"
+        self.__message = message
         super().__init__(*args, **kwargs)
 
     def __getattr__(self, x):
@@ -122,7 +122,7 @@ class DelayedImportErrorModule(types.ModuleType):
             )
 
 
-def load(fullname, error_on_import=False):
+def load(fullname, *, require=None, error_on_import=False):
     """Return a lazily imported proxy for a module.
 
     We often see the following pattern::
@@ -177,10 +177,12 @@ def load(fullname, error_on_import=False):
         Actual loading of the module occurs upon first attribute request.
 
     """
-    try:
-        return sys.modules[fullname]
-    except KeyError:
-        pass
+    module = sys.modules.get(fullname)
+    have_module = module is not None
+
+    # Most common, short-circuit
+    if have_module and require is None:
+        return module
 
     if "." in fullname:
         msg = (
@@ -190,44 +192,63 @@ def load(fullname, error_on_import=False):
         )
         warnings.warn(msg, RuntimeWarning)
 
-    spec = importlib.util.find_spec(fullname)
-    return _module_from_spec(
-        spec,
-        fullname,
-        f"No module named '{fullname}'",
-        error_on_import,
-    )
+    spec = None
+    if not have_module:
+        spec = importlib.util.find_spec(fullname)
+        have_module = spec is not None
 
+    if not have_module:
+        not_found_message = f"No module named '{fullname}'"
+    elif require is not None:
+        # Old style lazy loading to avoid polluting sys.modules
+        import packaging.requirements
 
-def _module_from_spec(spec, fullname, failure_message, error_on_import):
-    """Return lazy module, DelayedImportErrorModule, or raise error"""
-    if spec is None:
+        req = packaging.requirements.Requirement(require)
+        try:
+            have_module = req.specifier.contains(
+                importlib_metadata.version(req.name),
+                prereleases=True,
+            )
+        except importlib_metadata.PackageNotFoundError as e:
+            raise ValueError(
+                f"Found module '{fullname}' but cannot test requirement '{require}'. "
+                "Requirements must match distribution name, not module name."
+            ) from e
+
+        if not have_module:
+            not_found_message = f"No distribution can be found matching '{require}'"
+
+    if not have_module:
         if error_on_import:
-            raise ModuleNotFoundError(failure_message)
-        else:
-            try:
-                parent = inspect.stack()[2]
-                frame_data = {
-                    "filename": parent.filename,
-                    "lineno": parent.lineno,
-                    "function": parent.function,
-                    "code_context": parent.code_context,
-                }
-                return DelayedImportErrorModule(
-                    frame_data,
-                    "DelayedImportErrorModule",
-                    message=failure_message,
-                )
-            finally:
-                del parent
+            raise ModuleNotFoundError(not_found_message)
+        try:
+            parent = inspect.stack()[1]
+            frame_data = {
+                "filename": parent.filename,
+                "lineno": parent.lineno,
+                "function": parent.function,
+                "code_context": parent.code_context,
+            }
+            return DelayedImportErrorModule(
+                frame_data,
+                "DelayedImportErrorModule",
+                message=not_found_message,
+            )
+        finally:
+            del parent
 
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[fullname] = module
+    if spec is not None:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[fullname] = module
 
-    loader = importlib.util.LazyLoader(spec.loader)
-    loader.exec_module(module)
+        loader = importlib.util.LazyLoader(spec.loader)
+        loader.exec_module(module)
 
     return module
+
+
+def have_module(module_like: types.ModuleType) -> bool:
+    return not isinstance(module_like, DelayedImportErrorModule)
 
 
 class _StubVisitor(ast.NodeVisitor):
@@ -288,40 +309,3 @@ def attach_stub(package_name: str, filename: str):
     visitor = _StubVisitor()
     visitor.visit(stub_node)
     return attach(package_name, visitor._submodules, visitor._submod_attrs)
-
-
-def load_requirement(requirement, fullname=None, error_on_import=False):
-    # Old style lazy loading to avoid polluting sys.modules
-    import packaging.requirements
-
-    req = packaging.requirements.Requirement(requirement)
-
-    if fullname is None:
-        fullname = req.name
-
-    not_found_msg = f"No module named '{fullname}'"
-
-    module = sys.modules.get(fullname)
-    have_mod = module is not None
-    if not have_mod:
-        spec = importlib.util.find_spec(fullname)
-        have_mod = spec is not None
-
-    if have_mod and req.specifier:
-        # Note: req.name is the distribution name, not the module name
-        try:
-            version = importlib_metadata.version(req.name)
-        except importlib_metadata.PackageNotFoundError as e:
-            raise ValueError(
-                f"Found module '{fullname}' but cannot test requirement '{req}'. "
-                "Requirements must match distribution name, not module name."
-            ) from e
-        have_mod = any(req.specifier.filter((version,)))
-        if not have_mod:
-            spec = None
-            not_found_msg = f"No distribution can be found matching '{req}'"
-
-    if have_mod and module is not None:
-        return module, have_mod
-
-    return _module_from_spec(spec, fullname, not_found_msg, error_on_import), have_mod

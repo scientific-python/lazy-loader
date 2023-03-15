@@ -60,8 +60,9 @@ def attach(package_name, submodules=None, submod_attrs=None):
     if submodules is None:
         submodules = set()
     else:
-        submodules = set(submodules) | submod_attrs.keys()
+        submodules = set(submodules)
 
+    submodules |= submod_attrs.keys()
     attr_to_modules = {
         attr: mod for mod, attrs in submod_attrs.items() for attr in attrs
     }

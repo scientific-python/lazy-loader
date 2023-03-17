@@ -1,5 +1,32 @@
 # Changelog
 
+## [v0.2rc0](https://github.com/scientific-python/lazy_loader/tree/v0.2rc0)
+
+[Full Changelog](https://github.com/scientific-python/lazy_loader/compare/v0.1...v0.2rc0)
+
+**Closed issues:**
+
+- Allow to not fail on stub attach in frozen apps [\#38](https://github.com/scientific-python/lazy_loader/issues/38)
+- Stub files with absolute imports [\#36](https://github.com/scientific-python/lazy_loader/issues/36)
+- Help to packaging Debian package [\#35](https://github.com/scientific-python/lazy_loader/issues/35)
+- conda upload [\#33](https://github.com/scientific-python/lazy_loader/issues/33)
+- Possible issues with partial lazy loading [\#32](https://github.com/scientific-python/lazy_loader/issues/32)
+- Type hints/Mypy best practices? [\#28](https://github.com/scientific-python/lazy_loader/issues/28)
+- Re-export non descendant attribute? [\#27](https://github.com/scientific-python/lazy_loader/issues/27)
+- This is awesome [\#6](https://github.com/scientific-python/lazy_loader/issues/6)
+
+**Merged pull requests:**
+
+- Add information that `pyi` files are used in runtime when use `attach\_stub` [\#47](https://github.com/scientific-python/lazy_loader/pull/47) ([Czaki](https://github.com/Czaki))
+- Update tests to improve coverage [\#45](https://github.com/scientific-python/lazy_loader/pull/45) ([jarrodmillman](https://github.com/jarrodmillman))
+- Use codecov GH action [\#44](https://github.com/scientific-python/lazy_loader/pull/44) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update year [\#43](https://github.com/scientific-python/lazy_loader/pull/43) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update GH actions [\#42](https://github.com/scientific-python/lazy_loader/pull/42) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update pre-commit [\#41](https://github.com/scientific-python/lazy_loader/pull/41) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update optional depedencies [\#40](https://github.com/scientific-python/lazy_loader/pull/40) ([jarrodmillman](https://github.com/jarrodmillman))
+- Fix extension substitution to work with `\*.pyc` files [\#39](https://github.com/scientific-python/lazy_loader/pull/39) ([Czaki](https://github.com/Czaki))
+- Sort returned \_\_all\_\_ [\#34](https://github.com/scientific-python/lazy_loader/pull/34) ([stefanv](https://github.com/stefanv))
+
 ## [v0.1](https://github.com/scientific-python/lazy_loader/tree/v0.1) (2022-09-21)
 
 [Full Changelog](https://github.com/scientific-python/lazy_loader/compare/v0.1rc3...v0.1)

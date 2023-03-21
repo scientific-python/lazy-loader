@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.2rc0](https://github.com/scientific-python/lazy_loader/tree/v0.2)
+
+[Full Changelog](https://github.com/scientific-python/lazy_loader/compare/v0.1...v0.2)
+
+There were no changes since the release candidate, so
+see release notes for v0.2rc0 below for details.
+
 ## [v0.2rc0](https://github.com/scientific-python/lazy_loader/tree/v0.2rc0)
 
 [Full Changelog](https://github.com/scientific-python/lazy_loader/compare/v0.1...v0.2rc0)

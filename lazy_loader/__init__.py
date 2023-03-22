@@ -7,16 +7,10 @@ Makes it easy to load subpackages and functions on demand.
 import ast
 import importlib
 import importlib.util
-import inspect
 import os
 import sys
 import types
 import warnings
-
-try:
-    import importlib_metadata
-except ImportError:
-    import importlib.metadata as importlib_metadata
 
 __all__ = ["attach", "load", "attach_stub"]
 
@@ -200,8 +194,12 @@ def load(fullname, *, require=None, error_on_import=False):
     if not have_module:
         not_found_message = f"No module named '{fullname}'"
     elif require is not None:
-        # Old style lazy loading to avoid polluting sys.modules
         import packaging.requirements
+
+        try:
+            import importlib_metadata
+        except ImportError:
+            import importlib.metadata as importlib_metadata
 
         req = packaging.requirements.Requirement(require)
         try:
@@ -221,6 +219,8 @@ def load(fullname, *, require=None, error_on_import=False):
     if not have_module:
         if error_on_import:
             raise ModuleNotFoundError(not_found_message)
+        import inspect
+
         try:
             parent = inspect.stack()[1]
             frame_data = {

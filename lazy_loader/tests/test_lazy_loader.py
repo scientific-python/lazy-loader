@@ -30,12 +30,12 @@ def test_lazy_import_basics():
 
 def test_lazy_import_subpackages():
     with pytest.warns(RuntimeWarning):
-        ctextpad = lazy.load("curses.textpad")
-    assert "curses" in sys.modules
-    assert type(sys.modules["curses"]) == type(pytest)
-    assert isinstance(ctextpad, importlib.util._LazyModule)
-    assert "curses.textpad" in sys.modules
-    assert sys.modules["curses.textpad"] == ctextpad
+        hp = lazy.load("html.parser")
+    assert "html" in sys.modules
+    assert type(sys.modules["html"]) == type(pytest)
+    assert isinstance(hp, importlib.util._LazyModule)
+    assert "html.parser" in sys.modules
+    assert sys.modules["html.parser"] == hp
 
 
 def test_lazy_import_impact_on_sys_modules():

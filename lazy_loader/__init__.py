@@ -11,6 +11,7 @@ import inspect
 import os
 import sys
 import types
+import warnings
 
 __all__ = ["attach", "load", "attach_stub"]
 
@@ -121,26 +122,37 @@ def load(fullname, error_on_import=False):
     We often see the following pattern::
 
       def myfunc():
-          from numpy import linalg as la
-          la.norm(...)
+          import numpy as np
+          np.norm(...)
           ....
 
-    This is to prevent a module, in this case `numpy`, from being
-    imported at function definition time, since that can be slow.
+    Putting the import inside the function prevents, in this case,
+    `numpy`, from being imported at function definition time.
+    That saves time if `myfunc` ends up not being called.
 
-    This function provides a proxy module that, upon access, imports
+    This `load` function returns a proxy module that, upon access, imports
     the actual module.  So the idiom equivalent to the above example is::
 
-      la = lazy.load("numpy.linalg")
+      np = lazy.load("numpy")
 
       def myfunc():
-          la.norm(...)
+          np.norm(...)
           ....
 
     The initial import time is fast because the actual import is delayed
     until the first attribute is requested. The overall import time may
     decrease as well for users that don't make use of large portions
-    of the library.
+    of your library.
+
+    Warning
+    -------
+
+    While lazily loading subpackages technically works, it causes the
+    package (that contains the subpackage) to be eagerly loaded even
+    if the package is already lazily loaded.
+    So, you probably shouldn't use subpackages with this `load` feature.
+    Instead you should encourage the package maintainers to use the
+    lazy_loader `attach` feature to make their subpackages lazily load.
 
     Parameters
     ----------
@@ -148,7 +160,7 @@ def load(fullname, error_on_import=False):
         The full name of the module or submodule to import.  For example::
 
           sp = lazy.load('scipy')  # import scipy as sp
-          spla = lazy.load('scipy.linalg')  # import scipy.linalg as spla
+
     error_on_import : bool
         Whether to postpone raising import errors until the module is accessed.
         If set to `True`, import errors are raised as soon as `load` is called.
@@ -164,6 +176,14 @@ def load(fullname, error_on_import=False):
         return sys.modules[fullname]
     except KeyError:
         pass
+
+    if "." in fullname:
+        msg = (
+            "subpackages can technically be lazily loaded, but it causes the "
+            "package to be eagerly loaded even if it is already lazily loaded."
+            "So, you probably shouldn't use subpackages with this lazy feature."
+        )
+        warnings.warn(msg, RuntimeWarning)
 
     spec = importlib.util.find_spec(fullname)
     if spec is None:

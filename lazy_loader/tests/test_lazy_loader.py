@@ -1,3 +1,4 @@
+import importlib
 import sys
 import types
 
@@ -25,6 +26,16 @@ def test_lazy_import_basics():
         assert False  # Should not get here
     except ModuleNotFoundError:
         pass
+
+
+def test_lazy_import_subpackages():
+    with pytest.warns(RuntimeWarning):
+        ctextpad = lazy.load("curses.textpad")
+    assert "curses" in sys.modules
+    assert type(sys.modules["curses"]) == type(pytest)
+    assert isinstance(ctextpad, importlib.util._LazyModule)
+    assert "curses.textpad" in sys.modules
+    assert sys.modules["curses.textpad"] == ctextpad
 
 
 def test_lazy_import_impact_on_sys_modules():

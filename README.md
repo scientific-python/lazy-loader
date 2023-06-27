@@ -104,10 +104,16 @@ internal imports.
 Use `lazy.load` to lazily import external libraries:
 
 ```python
-linalg = lazy.load('scipy.linalg')  # `linalg` will only be loaded when accessed
+sp = lazy.load('scipy')  # `sp` will only be loaded when accessed
+sp.linalg.norm(...)
 ```
 
-You can also ask `lazy.load` to raise import errors as soon as it is called:
+_Note that lazily importing *sub*packages,
+i.e. `load('scipy.linalg')` will cause the package containing the
+subpackage to be imported immediately; thus, this usage is
+discouraged._
+
+You can ask `lazy.load` to raise import errors as soon as it is called:
 
 ```
 linalg = lazy.load('scipy.linalg', error_on_import=True)

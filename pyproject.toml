@@ -23,8 +23,8 @@ dynamic = ["description"]
 
 
 [project.optional-dependencies]
-test = ["pytest >= 7.2", "pytest-cov >= 4.0"]
-lint = ["pre-commit >= 3.1"]
+test = ["pytest >= 7.4", "pytest-cov >= 4.1"]
+lint = ["pre-commit >= 3.3"]
 
 [project.urls]
 Home = "https://scientific-python.org/specs/spec-0001/"

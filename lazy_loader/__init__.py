@@ -146,13 +146,12 @@ def load(fullname, error_on_import=False):
 
     Warning
     -------
-
-    While lazily loading subpackages technically works, it causes the
+    While lazily loading *sub*packages technically works, it causes the
     package (that contains the subpackage) to be eagerly loaded even
     if the package is already lazily loaded.
     So, you probably shouldn't use subpackages with this `load` feature.
     Instead you should encourage the package maintainers to use the
-    lazy_loader `attach` feature to make their subpackages lazily load.
+    `lazy_loader.attach` to make their subpackages load lazily.
 
     Parameters
     ----------

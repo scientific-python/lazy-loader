@@ -16,14 +16,14 @@ def test_lazy_import_basics():
     # poor-mans pytest.raises for testing errors on attribute access
     try:
         anything_not_real.pi
-        assert False  # Should not get here
+        raise AssertionError()  # Should not get here
     except ModuleNotFoundError:
         pass
     assert isinstance(anything_not_real, lazy.DelayedImportErrorModule)
     # see if it changes for second access
     try:
         anything_not_real.pi
-        assert False  # Should not get here
+        raise AssertionError()  # Should not get here
     except ModuleNotFoundError:
         pass
 
@@ -67,7 +67,7 @@ def test_lazy_import_nonbuiltins():
     if isinstance(sp, lazy.DelayedImportErrorModule):
         try:
             sp.pi
-            assert False
+            raise AssertionError()
         except ModuleNotFoundError:
             pass
 

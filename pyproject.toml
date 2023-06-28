@@ -32,3 +32,20 @@ Source = "https://github.com/scientific-python/lazy_loader"
 
 [tool.flit.sdist]
 exclude = ["tests/*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py37"
+select = [
+    "C",
+    "E",
+    "F",
+    "W",
+    "B",
+    "I",
+    "UP",
+]
+ignore = ['B018']
+exclude = [
+  "lazy_loader/tests/fake_pkg/__init__.pyi",
+]

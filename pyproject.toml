@@ -45,7 +45,7 @@ select = [
     "I",
     "UP",
 ]
-ignore = ['B018']
+ignore = ["B018", "B028"]
 exclude = [
   "lazy_loader/tests/fake_pkg/__init__.pyi",
 ]

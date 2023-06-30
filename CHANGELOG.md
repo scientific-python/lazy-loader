@@ -1,5 +1,20 @@
 # Changelog
 
+## [v0.3](https://github.com/scientific-python/lazy_loader/tree/v0.3) (2023-06-30)
+
+[Full Changelog](https://github.com/scientific-python/lazy_loader/compare/v0.2...v0.3)
+
+**Merged pull requests:**
+
+- Announce Python 3.12 support [\#63](https://github.com/scientific-python/lazy_loader/pull/63) ([jarrodmillman](https://github.com/jarrodmillman))
+- Ignore B028 [\#62](https://github.com/scientific-python/lazy_loader/pull/62) ([jarrodmillman](https://github.com/jarrodmillman))
+- Use dependabot to update requirements [\#61](https://github.com/scientific-python/lazy_loader/pull/61) ([jarrodmillman](https://github.com/jarrodmillman))
+- Use dependabot to update GH actions [\#60](https://github.com/scientific-python/lazy_loader/pull/60) ([jarrodmillman](https://github.com/jarrodmillman))
+- Use ruff [\#59](https://github.com/scientific-python/lazy_loader/pull/59) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update requirements [\#58](https://github.com/scientific-python/lazy_loader/pull/58) ([jarrodmillman](https://github.com/jarrodmillman))
+- Warn and discourage lazy.load of subpackages [\#57](https://github.com/scientific-python/lazy_loader/pull/57) ([dschult](https://github.com/dschult))
+- Test on Python 3.12.0-beta.2 [\#53](https://github.com/scientific-python/lazy_loader/pull/53) ([jarrodmillman](https://github.com/jarrodmillman))
+
 ## [v0.2](https://github.com/scientific-python/lazy_loader/tree/v0.2)
 
 [Full Changelog](https://github.com/scientific-python/lazy_loader/compare/v0.1...v0.2)

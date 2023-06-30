@@ -1,6 +1,6 @@
 # Changelog
 
-## [v0.2rc0](https://github.com/scientific-python/lazy_loader/tree/v0.2)
+## [v0.2](https://github.com/scientific-python/lazy_loader/tree/v0.2)
 
 [Full Changelog](https://github.com/scientific-python/lazy_loader/compare/v0.1...v0.2)
 

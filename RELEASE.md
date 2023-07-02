@@ -45,9 +45,9 @@ Example `version`
 - Publish on PyPi:
 
       git clean -fxd
-      pip install flit
-      flit build
-      flit publish
+      pip install -U build twine wheel
+      python -m build --sdist --wheel
+      twine upload -s dist/*
 
 - Update `version` in `pyproject.toml`.
 

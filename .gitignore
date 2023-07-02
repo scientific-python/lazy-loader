@@ -5,6 +5,8 @@
 
 # Distribution / packaging
 dist/
+build/
+lazy_loader.egg-info/
 
 # Unit test / coverage reports
 .pytest_cache/

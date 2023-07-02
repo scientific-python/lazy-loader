@@ -1,6 +1,6 @@
 [build-system]
-requires = ["flit_core >=3.8,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "lazy_loader"
@@ -20,8 +20,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
 ]
-dynamic = ["description"]
-
+description = "Makes it easy to load subpackages and functions on demand."
 
 [project.optional-dependencies]
 test = ["pytest >= 7.4", "pytest-cov >= 4.1"]
@@ -30,9 +29,6 @@ lint = ["pre-commit >= 3.3"]
 [project.urls]
 Home = "https://scientific-python.org/specs/spec-0001/"
 Source = "https://github.com/scientific-python/lazy_loader"
-
-[tool.flit.sdist]
-exclude = ["tests/*"]
 
 [tool.ruff]
 line-length = 88

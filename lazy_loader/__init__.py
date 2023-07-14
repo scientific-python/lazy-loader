@@ -260,13 +260,14 @@ def attach_stub(package_name: str, filename: str):
         incorrectly (e.g. if it contains an relative import from outside of the module)
     """
     stubfile = (
-        filename if filename.endswith(
-            "i") else f"{os.path.splitext(filename)[0]}.pyi"
+        filename if filename.endswith("i")
+        else f"{os.path.splitext(filename)[0]}.pyi"
     )
 
     if not os.path.exists(stubfile):
         raise ValueError(
-            f"Cannot load imports from non-existent stub {stubfile!r}")
+            f"Cannot load imports from non-existent stub {stubfile!r}",
+        )
 
     with open(stubfile) as f:
         stub_node = ast.parse(f.read())

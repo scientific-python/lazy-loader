@@ -280,12 +280,14 @@ def attach_stub(package_name: str, filename: str):
 PLACEHOLDER = object()
 
 
-class lazy_imports(object):
-    """Crazy context manager that will block imports and make them lazy.
-    import lazy_loader
-    with lazy_loader.lazy_imports() as stop:
-        raise stop
-        from ._mod import some_func
+class lazy_imports:
+    """
+    Context manager that will block imports and make them lazy.
+
+    >>> import lazy_loader
+    >>> with lazy_loader.lazy_imports():
+    >>>     from ._mod import some_func
+
     """
 
     def __init__(self):

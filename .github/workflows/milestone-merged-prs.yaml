@@ -12,7 +12,7 @@ jobs:
     name: attach to PR
     runs-on: ubuntu-latest
     steps:
-      - uses: scientific-python/attach-next-milestone-action@f94a5235518d4d34911c41e19d780b8e79d42238
+      - uses: scientific-python/attach-next-milestone-action@a4889cfde7d2578c1bc7400480d93910d2dd34f6
         with:
           token: ${{ secrets.MILESTONE_LABELER_TOKEN }}
           force: true

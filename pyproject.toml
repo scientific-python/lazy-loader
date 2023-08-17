@@ -23,7 +23,7 @@ classifiers = [
 description = "Makes it easy to load subpackages and functions on demand."
 dependencies = [
   "packaging",
-  "importlib_metadata; python_version < '3.9'",
+  "importlib_metadata; python_version < '3.8'",
 ]
 
 [project.optional-dependencies]

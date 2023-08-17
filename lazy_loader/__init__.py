@@ -194,27 +194,15 @@ def load(fullname, *, require=None, error_on_import=False):
     if not have_module:
         not_found_message = f"No module named '{fullname}'"
     elif require is not None:
-        import packaging.requirements
-
         try:
-            import importlib_metadata
-        except ImportError:
-            import importlib.metadata as importlib_metadata
-
-        req = packaging.requirements.Requirement(require)
-        try:
-            have_module = req.specifier.contains(
-                importlib_metadata.version(req.name),
-                prereleases=True,
-            )
-        except importlib_metadata.PackageNotFoundError as e:
+            have_module = _check_requirement(require)
+        except ModuleNotFoundError as e:
             raise ValueError(
                 f"Found module '{fullname}' but cannot test requirement '{require}'. "
                 "Requirements must match distribution name, not module name."
             ) from e
 
-        if not have_module:
-            not_found_message = f"No distribution can be found matching '{require}'"
+        not_found_message = f"No distribution can be found matching '{require}'"
 
     if not have_module:
         if error_on_import:
@@ -245,6 +233,37 @@ def load(fullname, *, require=None, error_on_import=False):
         loader.exec_module(module)
 
     return module
+
+
+def _check_requirement(require: str) -> bool:
+    """Verify that a package requirement is satisfied
+
+    If the package is required, a ``ModuleNotFoundError`` is raised
+    by ``importlib.metadata``.
+
+    Parameters
+    ----------
+    require : str
+        A dependency requirement as defined in PEP-508
+
+    Returns
+    -------
+    satisfied : bool
+        True if the installed version of the dependency matches
+        the specified version, False otherwise.
+    """
+    import packaging.requirements
+
+    try:
+        import importlib.metadata as importlib_metadata
+    except ImportError:  # PY37
+        import importlib_metadata
+
+    req = packaging.requirements.Requirement(require)
+    return req.specifier.contains(
+        importlib_metadata.version(req.name),
+        prereleases=True,
+    )
 
 
 def have_module(module_like: types.ModuleType) -> bool:

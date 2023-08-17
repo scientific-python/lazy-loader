@@ -7,13 +7,6 @@ import pytest
 
 import lazy_loader as lazy
 
-try:
-    import importlib_metadata  # noqa
-
-    have_importlib_metadata = True
-except ImportError:
-    have_importlib_metadata = False
-
 
 def test_lazy_import_basics():
     math = lazy.load("math")
@@ -160,7 +153,8 @@ def test_stub_loading_errors(tmp_path):
 
 
 def test_require_kwarg():
-    dot = "_" if have_importlib_metadata else "."
+    have_importlib_metadata = importlib.util.find_spec("importlib.metadata") is not None
+    dot = "." if have_importlib_metadata else "_"
     # Test with a module that definitely exists, behavior hinges on requirement
     with mock.patch(f"importlib{dot}metadata.version") as version:
         version.return_value = "1.0.0"

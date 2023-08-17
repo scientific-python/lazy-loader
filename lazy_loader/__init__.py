@@ -266,10 +266,6 @@ def _check_requirement(require: str) -> bool:
     )
 
 
-def have_module(module_like: types.ModuleType) -> bool:
-    return not isinstance(module_like, DelayedImportErrorModule)
-
-
 class _StubVisitor(ast.NodeVisitor):
     """AST visitor to parse a stub file for submodules and submod_attrs."""
 

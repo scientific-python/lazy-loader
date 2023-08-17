@@ -172,11 +172,3 @@ def test_require_kwarg():
     # raise a ValueError
     with pytest.raises(ValueError):
         lazy.load("math", require="somepkg >= 1.0")
-
-
-def test_have_module():
-    math = lazy.load("math")
-    anything_not_real = lazy.load("anything_not_real")
-
-    assert lazy.have_module(math)
-    assert not lazy.have_module(anything_not_real)

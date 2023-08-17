@@ -134,3 +134,10 @@ In this case, if `numpy` is installed, but the version is less than 1.24,
 the `np` module returned will raise an error on attribute access. Using
 this feature is not all-or-nothing: One module may rely on one version of
 numpy, while another module may not set any requirement.
+
+_Note that the requirement must use the package [distribution name][] instead
+of the module [import name][]. For example, the `pyyaml` distribution provides
+the `yaml` module for import._
+
+[distribution name]: https://packaging.python.org/en/latest/glossary/#term-Distribution-Package
+[import name]: https://packaging.python.org/en/latest/glossary/#term-Import-Package

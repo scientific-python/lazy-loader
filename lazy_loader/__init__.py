@@ -160,6 +160,14 @@ def load(fullname, *, require=None, error_on_import=False):
 
           sp = lazy.load('scipy')  # import scipy as sp
 
+    require : str
+        A dependency requirement as defined in PEP-508.  For example::
+
+          "numpy >=1.24"
+
+        If defined, the proxy module will raise an error if the installed
+        version does not satisfy the requirement.
+
     error_on_import : bool
         Whether to postpone raising import errors until the module is accessed.
         If set to `True`, import errors are raised as soon as `load` is called.

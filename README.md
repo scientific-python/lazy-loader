@@ -115,6 +115,22 @@ discouraged._
 
 You can ask `lazy.load` to raise import errors as soon as it is called:
 
-```
+```python
 linalg = lazy.load('scipy.linalg', error_on_import=True)
 ```
+
+#### Optional requirements
+
+One use for lazy loading is for loading optional dependencies, with
+errors only arising when optional functionality is accessed. If optional
+functionality depends on a specific version, a version requirement can
+be set:
+
+```python
+np = lazy.load("numpy", require="numpy >=1.24")
+```
+
+In this case, if `numpy` is installed, but the version is less than 1.24,
+the `np` module returned will raise an error on attribute access. Using
+this feature is not all-or-nothing: One module may rely on one version of
+numpy, while another module may not set any requirement.

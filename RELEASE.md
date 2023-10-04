@@ -46,17 +46,6 @@ Example `version number`
   where `origin` is the name of the `github.com:scientific-python/lazy_loader`
   repository
 
-- Review the github release page:
-
-      https://github.com/scientific-python/lazy_loader/tags
-
-- Publish on PyPi:
-
-      git clean -fxd
-      pip install -U build twine wheel
-      python -m build --sdist --wheel
-      twine upload -s dist/*
-
 - Update `version` in `pyproject.toml`.
 
 - Commit changes:

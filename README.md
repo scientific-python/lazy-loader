@@ -122,7 +122,7 @@ linalg = lazy.load('scipy.linalg', error_on_import=True)
 #### Optional requirements
 
 One use for lazy loading is for loading optional dependencies, with
-errors only arising when optional functionality is accessed. If optional
+`ImportErrors` only arising when optional functionality is accessed. If optional
 functionality depends on a specific version, a version requirement can
 be set:
 

@@ -7,7 +7,6 @@ Makes it easy to load subpackages and functions on demand.
 import ast
 import importlib
 import importlib.util
-import inspect
 import os
 import sys
 import types
@@ -99,24 +98,25 @@ def attach(package_name, submodules=None, submod_attrs=None):
 
 
 class DelayedImportErrorModule(types.ModuleType):
-    def __init__(self, frame_data, *args, **kwargs):
+    def __init__(self, frame_data, *args, message, **kwargs):
         self.__frame_data = frame_data
+        self.__message = message
         super().__init__(*args, **kwargs)
 
     def __getattr__(self, x):
-        if x in ("__class__", "__file__", "__frame_data"):
+        if x in ("__class__", "__file__", "__frame_data", "__message"):
             super().__getattr__(x)
         else:
             fd = self.__frame_data
             raise ModuleNotFoundError(
-                f"No module named '{fd['spec']}'\n\n"
+                f"{self.__message}\n\n"
                 "This error is lazily reported, having originally occured in\n"
                 f'  File {fd["filename"]}, line {fd["lineno"]}, in {fd["function"]}\n\n'
                 f'----> {"".join(fd["code_context"] or "").strip()}'
             )
 
 
-def load(fullname, error_on_import=False):
+def load(fullname, *, require=None, error_on_import=False):
     """Return a lazily imported proxy for a module.
 
     We often see the following pattern::
@@ -160,6 +160,14 @@ def load(fullname, error_on_import=False):
 
           sp = lazy.load('scipy')  # import scipy as sp
 
+    require : str
+        A dependency requirement as defined in PEP-508.  For example::
+
+          "numpy >=1.24"
+
+        If defined, the proxy module will raise an error if the installed
+        version does not satisfy the requirement.
+
     error_on_import : bool
         Whether to postpone raising import errors until the module is accessed.
         If set to `True`, import errors are raised as soon as `load` is called.
@@ -171,10 +179,12 @@ def load(fullname, error_on_import=False):
         Actual loading of the module occurs upon first attribute request.
 
     """
-    try:
-        return sys.modules[fullname]
-    except KeyError:
-        pass
+    module = sys.modules.get(fullname)
+    have_module = module is not None
+
+    # Most common, short-circuit
+    if have_module and require is None:
+        return module
 
     if "." in fullname:
         msg = (
@@ -184,31 +194,84 @@ def load(fullname, error_on_import=False):
         )
         warnings.warn(msg, RuntimeWarning)
 
-    spec = importlib.util.find_spec(fullname)
-    if spec is None:
+    spec = None
+    if not have_module:
+        spec = importlib.util.find_spec(fullname)
+        have_module = spec is not None
+
+    if not have_module:
+        not_found_message = f"No module named '{fullname}'"
+    elif require is not None:
+        try:
+            have_module = _check_requirement(require)
+        except ModuleNotFoundError as e:
+            raise ValueError(
+                f"Found module '{fullname}' but cannot test requirement '{require}'. "
+                "Requirements must match distribution name, not module name."
+            ) from e
+
+        not_found_message = f"No distribution can be found matching '{require}'"
+
+    if not have_module:
         if error_on_import:
-            raise ModuleNotFoundError(f"No module named '{fullname}'")
-        else:
-            try:
-                parent = inspect.stack()[1]
-                frame_data = {
-                    "spec": fullname,
-                    "filename": parent.filename,
-                    "lineno": parent.lineno,
-                    "function": parent.function,
-                    "code_context": parent.code_context,
-                }
-                return DelayedImportErrorModule(frame_data, "DelayedImportErrorModule")
-            finally:
-                del parent
+            raise ModuleNotFoundError(not_found_message)
+        import inspect
 
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[fullname] = module
+        try:
+            parent = inspect.stack()[1]
+            frame_data = {
+                "filename": parent.filename,
+                "lineno": parent.lineno,
+                "function": parent.function,
+                "code_context": parent.code_context,
+            }
+            return DelayedImportErrorModule(
+                frame_data,
+                "DelayedImportErrorModule",
+                message=not_found_message,
+            )
+        finally:
+            del parent
 
-    loader = importlib.util.LazyLoader(spec.loader)
-    loader.exec_module(module)
+    if spec is not None:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[fullname] = module
+
+        loader = importlib.util.LazyLoader(spec.loader)
+        loader.exec_module(module)
 
     return module
+
+
+def _check_requirement(require: str) -> bool:
+    """Verify that a package requirement is satisfied
+
+    If the package is required, a ``ModuleNotFoundError`` is raised
+    by ``importlib.metadata``.
+
+    Parameters
+    ----------
+    require : str
+        A dependency requirement as defined in PEP-508
+
+    Returns
+    -------
+    satisfied : bool
+        True if the installed version of the dependency matches
+        the specified version, False otherwise.
+    """
+    import packaging.requirements
+
+    try:
+        import importlib.metadata as importlib_metadata
+    except ImportError:  # PY37
+        import importlib_metadata
+
+    req = packaging.requirements.Requirement(require)
+    return req.specifier.contains(
+        importlib_metadata.version(req.name),
+        prereleases=True,
+    )
 
 
 class _StubVisitor(ast.NodeVisitor):

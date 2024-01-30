@@ -9,10 +9,14 @@ import importlib
 import importlib.util
 import os
 import sys
+import threading
 import types
 import warnings
 
 __all__ = ["attach", "load", "attach_stub"]
+
+
+threadlock = threading.Lock()
 
 
 def attach(package_name, submodules=None, submod_attrs=None):
@@ -179,66 +183,69 @@ def load(fullname, *, require=None, error_on_import=False):
         Actual loading of the module occurs upon first attribute request.
 
     """
-    module = sys.modules.get(fullname)
-    have_module = module is not None
+    with threadlock:
+        module = sys.modules.get(fullname)
+        have_module = module is not None
 
-    # Most common, short-circuit
-    if have_module and require is None:
-        return module
+        # Most common, short-circuit
+        if have_module and require is None:
+            return module
 
-    if "." in fullname:
-        msg = (
-            "subpackages can technically be lazily loaded, but it causes the "
-            "package to be eagerly loaded even if it is already lazily loaded."
-            "So, you probably shouldn't use subpackages with this lazy feature."
-        )
-        warnings.warn(msg, RuntimeWarning)
-
-    spec = None
-    if not have_module:
-        spec = importlib.util.find_spec(fullname)
-        have_module = spec is not None
-
-    if not have_module:
-        not_found_message = f"No module named '{fullname}'"
-    elif require is not None:
-        try:
-            have_module = _check_requirement(require)
-        except ModuleNotFoundError as e:
-            raise ValueError(
-                f"Found module '{fullname}' but cannot test requirement '{require}'. "
-                "Requirements must match distribution name, not module name."
-            ) from e
-
-        not_found_message = f"No distribution can be found matching '{require}'"
-
-    if not have_module:
-        if error_on_import:
-            raise ModuleNotFoundError(not_found_message)
-        import inspect
-
-        try:
-            parent = inspect.stack()[1]
-            frame_data = {
-                "filename": parent.filename,
-                "lineno": parent.lineno,
-                "function": parent.function,
-                "code_context": parent.code_context,
-            }
-            return DelayedImportErrorModule(
-                frame_data,
-                "DelayedImportErrorModule",
-                message=not_found_message,
+        if "." in fullname:
+            msg = (
+                "subpackages can technically be lazily loaded, but it causes the "
+                "package to be eagerly loaded even if it is already lazily loaded."
+                "So, you probably shouldn't use subpackages with this lazy feature."
             )
-        finally:
-            del parent
+            warnings.warn(msg, RuntimeWarning)
 
-    if spec is not None:
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[fullname] = module
+        spec = None
 
-        loader = importlib.util.LazyLoader(spec.loader)
-        loader.exec_module(module)
+        if not have_module:
+            spec = importlib.util.find_spec(fullname)
+            have_module = spec is not None
+
+        if not have_module:
+            not_found_message = f"No module named '{fullname}'"
+        elif require is not None:
+            try:
+                have_module = _check_requirement(require)
+            except ModuleNotFoundError as e:
+                raise ValueError(
+                    f"Found module '{fullname}' but cannot test "
+                    "requirement '{require}'. "
+                    "Requirements must match distribution name, not module name."
+                ) from e
+
+            not_found_message = f"No distribution can be found matching '{require}'"
+
+        if not have_module:
+            if error_on_import:
+                raise ModuleNotFoundError(not_found_message)
+            import inspect
+
+            try:
+                parent = inspect.stack()[1]
+                frame_data = {
+                    "filename": parent.filename,
+                    "lineno": parent.lineno,
+                    "function": parent.function,
+                    "code_context": parent.code_context,
+                }
+                return DelayedImportErrorModule(
+                    frame_data,
+                    "DelayedImportErrorModule",
+                    message=not_found_message,
+                )
+            finally:
+                del parent
+
+        if spec is not None:
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[fullname] = module
+
+            loader = importlib.util.LazyLoader(spec.loader)
+            loader.exec_module(module)
 
     return module
 

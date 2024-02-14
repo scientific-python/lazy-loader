@@ -34,4 +34,4 @@ jobs:
           # python -m pytest --cov=lazy_loader --doctest-modules --durations=20
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4

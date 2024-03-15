@@ -17,6 +17,11 @@ For a more detailed discussion, see [the SPEC](https://scientific-python.org/spe
 pip install -U lazy_loader
 ```
 
+We recommend using `lazy_loader` with Python >= 3.11.
+If using Python 3.11, please upgrade to 3.11.9 or later.
+If using Python 3.12, please upgrade to 3.12.3 or later.
+These versions [avoid](https://github.com/python/cpython/pull/114781) a [known race condition](https://github.com/python/cpython/issues/114763).
+
 ## Usage
 
 ### Lazily load subpackages

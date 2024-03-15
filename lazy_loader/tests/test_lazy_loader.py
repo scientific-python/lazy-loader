@@ -153,6 +153,11 @@ def test_stub_loading_errors(tmp_path):
     with pytest.raises(ValueError, match="Cannot load imports from non-existent stub"):
         lazy.attach_stub("name", "not a file")
 
+    stub2 = tmp_path / "stub2.pyi"
+    stub2.write_text("from .mod import *\n")
+    with pytest.raises(ValueError, match=".*does not support star import"):
+        lazy.attach_stub("name", str(stub2))
+
 
 def test_require_kwarg():
     have_importlib_metadata = importlib.util.find_spec("importlib.metadata") is not None

@@ -296,7 +296,13 @@ class _StubVisitor(ast.NodeVisitor):
             )
         if node.module:
             attrs: list = self._submod_attrs.setdefault(node.module, [])
-            attrs.extend(alias.name for alias in node.names)
+            aliases = [alias.name for alias in node.names]
+            if "*" in aliases:
+                raise ValueError(
+                    "lazy stub loader does not support star import "
+                    f"`from {node.module} import *`"
+                )
+            attrs.extend(aliases)
         else:
             self._submodules.update(alias.name for alias in node.names)
 

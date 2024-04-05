@@ -43,8 +43,6 @@ def attach(package_name, submodules=None, submod_attrs=None):
         {'foo': ['someattr']}
       )
 
-    This functionality requires Python 3.7 or higher.
-
     Parameters
     ----------
     package_name : str
@@ -269,12 +267,9 @@ def _check_requirement(require: str) -> bool:
         True if the installed version of the dependency matches
         the specified version, False otherwise.
     """
-    import packaging.requirements
+    import importlib.metadata as importlib_metadata
 
-    try:
-        import importlib.metadata as importlib_metadata
-    except ImportError:  # PY37
-        import importlib_metadata
+    import packaging.requirements
 
     req = packaging.requirements.Requirement(require)
     return req.specifier.contains(

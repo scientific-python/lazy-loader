@@ -18,18 +18,21 @@ Example `version number`
       export PREVIOUS=<previous version number>
       export ORG="scientific-python"
       export REPO="lazy_loader"
+      export LOG="CHANGELOG.md"
 
 - Autogenerate release notes
 
-      changelist ${ORG}/${REPO} v${PREVIOUS} main --version ${VERSION}
+      changelist ${ORG}/${REPO} v${PREVIOUS} main --version ${VERSION} --config pyproject.toml --out ${VERSION}.md
 
 - Put the output of the above command at the top of `CHANGELOG.md`
 
-- Update `version` in `pyproject.toml`.
+      cat ${VERSION}.md | cat - ${LOG} > temp && mv temp ${LOG}
+
+- Update `version` in `lazy_loader/__init__.py`.
 
 - Commit changes:
 
-      git add pyproject.toml CHANGELOG.md
+      git add lazy_loader/__init__.py ${LOG}
       git commit -m "Designate ${VERSION} release"
 
 - Tag the release in git:
@@ -46,10 +49,22 @@ Example `version number`
   where `origin` is the name of the `github.com:scientific-python/lazy_loader`
   repository
 
-- Update `version` in `pyproject.toml`.
+- Create release from tag
+
+      - go to https://github.com/scientific-python/lazy_loader/releases/new?tag=v${VERSION}
+      - add v${VERSION} for the `Release title`
+      - paste contents (or upload) of ${VERSION}.md in the `Describe this release section`
+      - if pre-release check the box labelled `Set as a pre-release`
+
+- Update https://github.com/scientific-python/lazy_loader/milestones:
+
+      - close old milestone
+      - ensure new milestone exists (perhaps setting due date)
+
+- Update `version` in `lazy_loader/__init__.py`.
 
 - Commit changes:
 
-      git add pyproject.toml
+      git add lazy_loader/__init__.py
       git commit -m 'Bump version'
       git push origin main

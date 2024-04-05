@@ -14,57 +14,74 @@ Example `version number`
 
 - Set release variables:
 
-      export VERSION=<version number>
-      export PREVIOUS=<previous version number>
-      export ORG="scientific-python"
-      export REPO="lazy_loader"
-      export LOG="CHANGELOG.md"
+  ```bash
+  export VERSION=<version number>
+  export PREVIOUS=<previous version number>
+  export ORG="scientific-python"
+  export REPO="lazy_loader"
+  export LOG="CHANGELOG.md"
+  ```
 
 - Autogenerate release notes
 
-      changelist ${ORG}/${REPO} v${PREVIOUS} main --version ${VERSION} --config pyproject.toml --out ${VERSION}.md
+  ```bash
+  changelist ${ORG}/${REPO} v${PREVIOUS} main --version ${VERSION} --config pyproject.toml --out ${VERSION}.md
+  ```
 
 - Put the output of the above command at the top of `CHANGELOG.md`
 
-      cat ${VERSION}.md | cat - ${LOG} > temp && mv temp ${LOG}
+  ```bash
+  cat ${VERSION}.md | cat - ${LOG} > temp && mv temp ${LOG}
+  ```
 
 - Update `version` in `lazy_loader/__init__.py`.
 
 - Commit changes:
 
-      git add lazy_loader/__init__.py ${LOG}
-      git commit -m "Designate ${VERSION} release"
+  ```bash
+  git add lazy_loader/__init__.py ${LOG}
+  git commit -m "Designate ${VERSION} release"
+  ```
 
 - Tag the release in git:
 
-      git tag -s v${VERSION} -m "signed ${VERSION} tag"
+  ```bash
+  git tag -s v${VERSION} -m "signed ${VERSION} tag"
+  ```
 
   If you do not have a gpg key, use -u instead; it is important for
   Debian packaging that the tags are annotated
 
 - Push the new meta-data to github:
 
-      git push --tags origin main
+  ```bash
+  git push --tags origin main
+  ```
 
   where `origin` is the name of the `github.com:scientific-python/lazy_loader`
   repository
 
 - Create release from tag
 
-      - go to https://github.com/scientific-python/lazy_loader/releases/new?tag=v${VERSION}
-      - add v${VERSION} for the `Release title`
-      - paste contents (or upload) of ${VERSION}.md in the `Describe this release section`
-      - if pre-release check the box labelled `Set as a pre-release`
+- go to https://github.com/scientific-python/lazy_loader/releases/new?tag=v$%7BVERSION%7D
+
+- add v${VERSION} for the `Release title`
+
+- paste contents (or upload) of ${VERSION}.md in the `Describe this release section`
+
+- if pre-release check the box labelled `Set as a pre-release`
 
 - Update https://github.com/scientific-python/lazy_loader/milestones:
 
-      - close old milestone
-      - ensure new milestone exists (perhaps setting due date)
+  - close old milestone
+  - ensure new milestone exists (perhaps setting due date)
 
 - Update `version` in `lazy_loader/__init__.py`.
 
 - Commit changes:
 
-      git add lazy_loader/__init__.py
-      git commit -m 'Bump version'
-      git push origin main
+  ```bash
+  git add lazy_loader/__init__.py
+  git commit -m 'Bump version'
+  git push origin main
+  ```

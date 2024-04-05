@@ -9,7 +9,7 @@ We're happy to announce the release of lazy_loader 0.4!
 
 ## Bug Fixes
 
-- Avoid exception when \_\_frame_data["code_context"] is None ([#83](https://github.com/scientific-python/lazy_loader/pull/83)).
+- Avoid exception when `__frame_data["code_context"]` is None ([#83](https://github.com/scientific-python/lazy_loader/pull/83)).
 - Make `lazy_load.load` partially thread-safe ([#90](https://github.com/scientific-python/lazy_loader/pull/90)).
 
 ## Documentation
@@ -73,14 +73,14 @@ duplicates._
 
 **Merged pull requests:**
 
-- Announce Python 3.12 support [\#63](https://github.com/scientific-python/lazy_loader/pull/63) ([jarrodmillman](https://github.com/jarrodmillman))
-- Ignore B028 [\#62](https://github.com/scientific-python/lazy_loader/pull/62) ([jarrodmillman](https://github.com/jarrodmillman))
-- Use dependabot to update requirements [\#61](https://github.com/scientific-python/lazy_loader/pull/61) ([jarrodmillman](https://github.com/jarrodmillman))
-- Use dependabot to update GH actions [\#60](https://github.com/scientific-python/lazy_loader/pull/60) ([jarrodmillman](https://github.com/jarrodmillman))
-- Use ruff [\#59](https://github.com/scientific-python/lazy_loader/pull/59) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update requirements [\#58](https://github.com/scientific-python/lazy_loader/pull/58) ([jarrodmillman](https://github.com/jarrodmillman))
-- Warn and discourage lazy.load of subpackages [\#57](https://github.com/scientific-python/lazy_loader/pull/57) ([dschult](https://github.com/dschult))
-- Test on Python 3.12.0-beta.2 [\#53](https://github.com/scientific-python/lazy_loader/pull/53) ([jarrodmillman](https://github.com/jarrodmillman))
+- Announce Python 3.12 support [#63](https://github.com/scientific-python/lazy_loader/pull/63) ([jarrodmillman](https://github.com/jarrodmillman))
+- Ignore B028 [#62](https://github.com/scientific-python/lazy_loader/pull/62) ([jarrodmillman](https://github.com/jarrodmillman))
+- Use dependabot to update requirements [#61](https://github.com/scientific-python/lazy_loader/pull/61) ([jarrodmillman](https://github.com/jarrodmillman))
+- Use dependabot to update GH actions [#60](https://github.com/scientific-python/lazy_loader/pull/60) ([jarrodmillman](https://github.com/jarrodmillman))
+- Use ruff [#59](https://github.com/scientific-python/lazy_loader/pull/59) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update requirements [#58](https://github.com/scientific-python/lazy_loader/pull/58) ([jarrodmillman](https://github.com/jarrodmillman))
+- Warn and discourage lazy.load of subpackages [#57](https://github.com/scientific-python/lazy_loader/pull/57) ([dschult](https://github.com/dschult))
+- Test on Python 3.12.0-beta.2 [#53](https://github.com/scientific-python/lazy_loader/pull/53) ([jarrodmillman](https://github.com/jarrodmillman))
 
 ## [v0.2](https://github.com/scientific-python/lazy_loader/tree/v0.2)
 
@@ -95,26 +95,26 @@ see release notes for v0.2rc0 below for details.
 
 **Closed issues:**
 
-- Allow to not fail on stub attach in frozen apps [\#38](https://github.com/scientific-python/lazy_loader/issues/38)
-- Stub files with absolute imports [\#36](https://github.com/scientific-python/lazy_loader/issues/36)
-- Help to packaging Debian package [\#35](https://github.com/scientific-python/lazy_loader/issues/35)
-- conda upload [\#33](https://github.com/scientific-python/lazy_loader/issues/33)
-- Possible issues with partial lazy loading [\#32](https://github.com/scientific-python/lazy_loader/issues/32)
-- Type hints/Mypy best practices? [\#28](https://github.com/scientific-python/lazy_loader/issues/28)
-- Re-export non descendant attribute? [\#27](https://github.com/scientific-python/lazy_loader/issues/27)
-- This is awesome [\#6](https://github.com/scientific-python/lazy_loader/issues/6)
+- Allow to not fail on stub attach in frozen apps [#38](https://github.com/scientific-python/lazy_loader/issues/38)
+- Stub files with absolute imports [#36](https://github.com/scientific-python/lazy_loader/issues/36)
+- Help to packaging Debian package [#35](https://github.com/scientific-python/lazy_loader/issues/35)
+- conda upload [#33](https://github.com/scientific-python/lazy_loader/issues/33)
+- Possible issues with partial lazy loading [#32](https://github.com/scientific-python/lazy_loader/issues/32)
+- Type hints/Mypy best practices? [#28](https://github.com/scientific-python/lazy_loader/issues/28)
+- Re-export non descendant attribute? [#27](https://github.com/scientific-python/lazy_loader/issues/27)
+- This is awesome [#6](https://github.com/scientific-python/lazy_loader/issues/6)
 
 **Merged pull requests:**
 
-- Add information that `pyi` files are used in runtime when use `attach\_stub` [\#47](https://github.com/scientific-python/lazy_loader/pull/47) ([Czaki](https://github.com/Czaki))
-- Update tests to improve coverage [\#45](https://github.com/scientific-python/lazy_loader/pull/45) ([jarrodmillman](https://github.com/jarrodmillman))
-- Use codecov GH action [\#44](https://github.com/scientific-python/lazy_loader/pull/44) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update year [\#43](https://github.com/scientific-python/lazy_loader/pull/43) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update GH actions [\#42](https://github.com/scientific-python/lazy_loader/pull/42) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update pre-commit [\#41](https://github.com/scientific-python/lazy_loader/pull/41) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update optional depedencies [\#40](https://github.com/scientific-python/lazy_loader/pull/40) ([jarrodmillman](https://github.com/jarrodmillman))
-- Fix extension substitution to work with `\*.pyc` files [\#39](https://github.com/scientific-python/lazy_loader/pull/39) ([Czaki](https://github.com/Czaki))
-- Sort returned \_\_all\_\_ [\#34](https://github.com/scientific-python/lazy_loader/pull/34) ([stefanv](https://github.com/stefanv))
+- Add information that `pyi` files are used in runtime when use `attach\_stub` [#47](https://github.com/scientific-python/lazy_loader/pull/47) ([Czaki](https://github.com/Czaki))
+- Update tests to improve coverage [#45](https://github.com/scientific-python/lazy_loader/pull/45) ([jarrodmillman](https://github.com/jarrodmillman))
+- Use codecov GH action [#44](https://github.com/scientific-python/lazy_loader/pull/44) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update year [#43](https://github.com/scientific-python/lazy_loader/pull/43) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update GH actions [#42](https://github.com/scientific-python/lazy_loader/pull/42) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update pre-commit [#41](https://github.com/scientific-python/lazy_loader/pull/41) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update optional depedencies [#40](https://github.com/scientific-python/lazy_loader/pull/40) ([jarrodmillman](https://github.com/jarrodmillman))
+- Fix extension substitution to work with `\*.pyc` files [#39](https://github.com/scientific-python/lazy_loader/pull/39) ([Czaki](https://github.com/Czaki))
+- Sort returned \_\_all\_\_ [#34](https://github.com/scientific-python/lazy_loader/pull/34) ([stefanv](https://github.com/stefanv))
 
 ## [v0.1](https://github.com/scientific-python/lazy_loader/tree/v0.1) (2022-09-21)
 
@@ -122,9 +122,9 @@ see release notes for v0.2rc0 below for details.
 
 **Merged pull requests:**
 
-- Update classifiers [\#31](https://github.com/scientific-python/lazy_loader/pull/31) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update precommit hooks [\#30](https://github.com/scientific-python/lazy_loader/pull/30) ([jarrodmillman](https://github.com/jarrodmillman))
-- Refer to SPEC for stub usage [\#29](https://github.com/scientific-python/lazy_loader/pull/29) ([stefanv](https://github.com/stefanv))
+- Update classifiers [#31](https://github.com/scientific-python/lazy_loader/pull/31) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update precommit hooks [#30](https://github.com/scientific-python/lazy_loader/pull/30) ([jarrodmillman](https://github.com/jarrodmillman))
+- Refer to SPEC for stub usage [#29](https://github.com/scientific-python/lazy_loader/pull/29) ([stefanv](https://github.com/stefanv))
 
 ## [v0.1rc3](https://github.com/scientific-python/lazy_loader/tree/v0.1rc3) (2022-08-29)
 
@@ -132,21 +132,21 @@ see release notes for v0.2rc0 below for details.
 
 **Merged pull requests:**
 
-- Add test and coverage badges [\#26](https://github.com/scientific-python/lazy_loader/pull/26) ([jarrodmillman](https://github.com/jarrodmillman))
-- Fix typos [\#25](https://github.com/scientific-python/lazy_loader/pull/25) ([jarrodmillman](https://github.com/jarrodmillman))
-- Measure test coverage [\#23](https://github.com/scientific-python/lazy_loader/pull/23) ([jarrodmillman](https://github.com/jarrodmillman))
-- Document release process [\#22](https://github.com/scientific-python/lazy_loader/pull/22) ([jarrodmillman](https://github.com/jarrodmillman))
-- Add classifiers [\#21](https://github.com/scientific-python/lazy_loader/pull/21) ([jarrodmillman](https://github.com/jarrodmillman))
-- Lint toml files [\#20](https://github.com/scientific-python/lazy_loader/pull/20) ([jarrodmillman](https://github.com/jarrodmillman))
-- Test on more versions and platforms [\#19](https://github.com/scientific-python/lazy_loader/pull/19) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update GH actions [\#18](https://github.com/scientific-python/lazy_loader/pull/18) ([jarrodmillman](https://github.com/jarrodmillman))
-- Split out linting CI from testing [\#17](https://github.com/scientific-python/lazy_loader/pull/17) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update precommit hooks [\#16](https://github.com/scientific-python/lazy_loader/pull/16) ([jarrodmillman](https://github.com/jarrodmillman))
-- Specify lower bounds on dependencies [\#15](https://github.com/scientific-python/lazy_loader/pull/15) ([jarrodmillman](https://github.com/jarrodmillman))
-- Lower min required Python version to 3.7 [\#14](https://github.com/scientific-python/lazy_loader/pull/14) ([donatasm](https://github.com/donatasm))
-- feat: add attach_stub function to load imports from type stubs [\#10](https://github.com/scientific-python/lazy_loader/pull/10) ([tlambert03](https://github.com/tlambert03))
-- Avoid conflicts when function is implemented in same-named submodule [\#9](https://github.com/scientific-python/lazy_loader/pull/9) ([stefanv](https://github.com/stefanv))
-- DOC fix missing comma in usage example in README.md [\#7](https://github.com/scientific-python/lazy_loader/pull/7) ([adrinjalali](https://github.com/adrinjalali))
+- Add test and coverage badges [#26](https://github.com/scientific-python/lazy_loader/pull/26) ([jarrodmillman](https://github.com/jarrodmillman))
+- Fix typos [#25](https://github.com/scientific-python/lazy_loader/pull/25) ([jarrodmillman](https://github.com/jarrodmillman))
+- Measure test coverage [#23](https://github.com/scientific-python/lazy_loader/pull/23) ([jarrodmillman](https://github.com/jarrodmillman))
+- Document release process [#22](https://github.com/scientific-python/lazy_loader/pull/22) ([jarrodmillman](https://github.com/jarrodmillman))
+- Add classifiers [#21](https://github.com/scientific-python/lazy_loader/pull/21) ([jarrodmillman](https://github.com/jarrodmillman))
+- Lint toml files [#20](https://github.com/scientific-python/lazy_loader/pull/20) ([jarrodmillman](https://github.com/jarrodmillman))
+- Test on more versions and platforms [#19](https://github.com/scientific-python/lazy_loader/pull/19) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update GH actions [#18](https://github.com/scientific-python/lazy_loader/pull/18) ([jarrodmillman](https://github.com/jarrodmillman))
+- Split out linting CI from testing [#17](https://github.com/scientific-python/lazy_loader/pull/17) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update precommit hooks [#16](https://github.com/scientific-python/lazy_loader/pull/16) ([jarrodmillman](https://github.com/jarrodmillman))
+- Specify lower bounds on dependencies [#15](https://github.com/scientific-python/lazy_loader/pull/15) ([jarrodmillman](https://github.com/jarrodmillman))
+- Lower min required Python version to 3.7 [#14](https://github.com/scientific-python/lazy_loader/pull/14) ([donatasm](https://github.com/donatasm))
+- feat: add attach_stub function to load imports from type stubs [#10](https://github.com/scientific-python/lazy_loader/pull/10) ([tlambert03](https://github.com/tlambert03))
+- Avoid conflicts when function is implemented in same-named submodule [#9](https://github.com/scientific-python/lazy_loader/pull/9) ([stefanv](https://github.com/stefanv))
+- DOC fix missing comma in usage example in README.md [#7](https://github.com/scientific-python/lazy_loader/pull/7) ([adrinjalali](https://github.com/adrinjalali))
 
 ## [v0.1rc2](https://github.com/scientific-python/lazy_loader/tree/v0.1rc2) (2022-03-10)
 
@@ -154,8 +154,8 @@ see release notes for v0.2rc0 below for details.
 
 **Merged pull requests:**
 
-- Add contributor README [\#5](https://github.com/scientific-python/lazy_loader/pull/5) ([stefanv](https://github.com/stefanv))
-- Simplify delayed exception handling and improve reporting [\#4](https://github.com/scientific-python/lazy_loader/pull/4) ([stefanv](https://github.com/stefanv))
+- Add contributor README [#5](https://github.com/scientific-python/lazy_loader/pull/5) ([stefanv](https://github.com/stefanv))
+- Simplify delayed exception handling and improve reporting [#4](https://github.com/scientific-python/lazy_loader/pull/4) ([stefanv](https://github.com/stefanv))
 
 ## [v0.1rc1](https://github.com/scientific-python/lazy_loader/tree/v0.1rc1) (2022-03-01)
 
@@ -163,11 +163,11 @@ see release notes for v0.2rc0 below for details.
 
 **Closed issues:**
 
-- Create package on pypi [\#1](https://github.com/scientific-python/lazy_loader/issues/1)
+- Create package on pypi [#1](https://github.com/scientific-python/lazy_loader/issues/1)
 
 **Merged pull requests:**
 
-- Run pre-commit hooks [\#3](https://github.com/scientific-python/lazy_loader/pull/3) ([tupui](https://github.com/tupui))
-- Add the packaging infrastructure [\#2](https://github.com/scientific-python/lazy_loader/pull/2) ([tupui](https://github.com/tupui))
+- Run pre-commit hooks [#3](https://github.com/scientific-python/lazy_loader/pull/3) ([tupui](https://github.com/tupui))
+- Add the packaging infrastructure [#2](https://github.com/scientific-python/lazy_loader/pull/2) ([tupui](https://github.com/tupui))
 
 \* _This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)_

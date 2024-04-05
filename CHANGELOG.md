@@ -5,11 +5,11 @@ We're happy to announce the release of lazy_loader 0.4!
 ## Enhancements
 
 - ENH: Add require argument to load() to accept version specifiers ([#48](https://github.com/scientific-python/lazy_loader/pull/48)).
-- Add version as __version__ ([#97](https://github.com/scientific-python/lazy_loader/pull/97)).
+- Add version as **version** ([#97](https://github.com/scientific-python/lazy_loader/pull/97)).
 
 ## Bug Fixes
 
-- Avoid exception when __frame_data["code_context"] is None ([#83](https://github.com/scientific-python/lazy_loader/pull/83)).
+- Avoid exception when \_\_frame_data["code_context"] is None ([#83](https://github.com/scientific-python/lazy_loader/pull/83)).
 - Make `lazy_load.load` partially thread-safe ([#90](https://github.com/scientific-python/lazy_loader/pull/90)).
 
 ## Documentation

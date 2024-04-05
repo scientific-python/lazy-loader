@@ -267,13 +267,13 @@ def _check_requirement(require: str) -> bool:
         True if the installed version of the dependency matches
         the specified version, False otherwise.
     """
-    import importlib.metadata as importlib_metadata
+    import importlib.metadata
 
     import packaging.requirements
 
     req = packaging.requirements.Requirement(require)
     return req.specifier.contains(
-        importlib_metadata.version(req.name),
+        importlib.metadata.version(req.name),
         prereleases=True,
     )
 

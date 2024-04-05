@@ -14,7 +14,7 @@ import threading
 import types
 import warnings
 
-__version__ = "0.4rc0.dev0"
+__version__ = "0.4"
 __all__ = ["attach", "load", "attach_stub"]
 
 

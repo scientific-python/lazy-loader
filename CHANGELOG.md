@@ -1,3 +1,70 @@
+# lazy_loader 0.4
+
+We're happy to announce the release of lazy_loader 0.4!
+
+## Enhancements
+
+- ENH: Add require argument to load() to accept version specifiers ([#48](https://github.com/scientific-python/lazy_loader/pull/48)).
+- Add version as __version__ ([#97](https://github.com/scientific-python/lazy_loader/pull/97)).
+
+## Bug Fixes
+
+- Avoid exception when __frame_data["code_context"] is None ([#83](https://github.com/scientific-python/lazy_loader/pull/83)).
+- Make `lazy_load.load` partially thread-safe ([#90](https://github.com/scientific-python/lazy_loader/pull/90)).
+
+## Documentation
+
+- Add security contact ([#91](https://github.com/scientific-python/lazy_loader/pull/91)).
+- Recommend newer Python versions to avoid race ([#102](https://github.com/scientific-python/lazy_loader/pull/102)).
+
+## Maintenance
+
+- Use label-check and attach-next-milestone-action ([#64](https://github.com/scientific-python/lazy_loader/pull/64)).
+- Use setuptools ([#65](https://github.com/scientific-python/lazy_loader/pull/65)).
+- Specify what goes in sdist ([#66](https://github.com/scientific-python/lazy_loader/pull/66)).
+- Use changelist ([#67](https://github.com/scientific-python/lazy_loader/pull/67)).
+- Used dependabot ([#68](https://github.com/scientific-python/lazy_loader/pull/68)).
+- Bump pre-commit from 3.3 to 3.3.3 ([#69](https://github.com/scientific-python/lazy_loader/pull/69)).
+- Bump scientific-python/attach-next-milestone-action from f94a5235518d4d34911c41e19d780b8e79d42238 to a4889cfde7d2578c1bc7400480d93910d2dd34f6 ([#72](https://github.com/scientific-python/lazy_loader/pull/72)).
+- Bump scientific-python/attach-next-milestone-action from a4889cfde7d2578c1bc7400480d93910d2dd34f6 to bc07be829f693829263e57d5e8489f4e57d3d420 ([#74](https://github.com/scientific-python/lazy_loader/pull/74)).
+- Bump actions/checkout from 3 to 4 ([#75](https://github.com/scientific-python/lazy_loader/pull/75)).
+- Bump changelist from 0.1 to 0.3 ([#77](https://github.com/scientific-python/lazy_loader/pull/77)).
+- Bump pre-commit from 3.3.3 to 3.4.0 ([#76](https://github.com/scientific-python/lazy_loader/pull/76)).
+- Use trusted publisher ([#78](https://github.com/scientific-python/lazy_loader/pull/78)).
+- Bump pre-commit from 3.4.0 to 3.5.0 ([#80](https://github.com/scientific-python/lazy_loader/pull/80)).
+- Bump changelist from 0.3 to 0.4 ([#81](https://github.com/scientific-python/lazy_loader/pull/81)).
+- Bump actions/checkout from 3 to 4 ([#82](https://github.com/scientific-python/lazy_loader/pull/82)).
+- Bump actions/setup-python from 4 to 5 ([#85](https://github.com/scientific-python/lazy_loader/pull/85)).
+- Bump pre-commit from 3.5.0 to 3.6.0 ([#84](https://github.com/scientific-python/lazy_loader/pull/84)).
+- Update pre-commit ([#87](https://github.com/scientific-python/lazy_loader/pull/87)).
+- Use setup-python pip cache ([#95](https://github.com/scientific-python/lazy_loader/pull/95)).
+- Bump codecov/codecov-action from 3 to 4 ([#93](https://github.com/scientific-python/lazy_loader/pull/93)).
+- Bump pre-commit from 3.6.0 to 3.6.2 ([#100](https://github.com/scientific-python/lazy_loader/pull/100)).
+- Bump changelist from 0.4 to 0.5 ([#99](https://github.com/scientific-python/lazy_loader/pull/99)).
+- Refuse star imports in stub loader ([#101](https://github.com/scientific-python/lazy_loader/pull/101)).
+- Bump pre-commit from 3.6.2 to 3.7.0 ([#103](https://github.com/scientific-python/lazy_loader/pull/103)).
+- Update pre-commit repos ([#104](https://github.com/scientific-python/lazy_loader/pull/104)).
+
+## Contributors
+
+4 authors added to this release (alphabetically):
+
+- Chris Markiewicz ([@effigies](https://github.com/effigies))
+- Dan Schult ([@dschult](https://github.com/dschult))
+- Jarrod Millman ([@jarrodmillman](https://github.com/jarrodmillman))
+- Stefan van der Walt ([@stefanv](https://github.com/stefanv))
+
+5 reviewers added to this release (alphabetically):
+
+- Brigitta Sipőcz ([@bsipocz](https://github.com/bsipocz))
+- Chris Markiewicz ([@effigies](https://github.com/effigies))
+- Dan Schult ([@dschult](https://github.com/dschult))
+- Jarrod Millman ([@jarrodmillman](https://github.com/jarrodmillman))
+- Stefan van der Walt ([@stefanv](https://github.com/stefanv))
+
+_These lists are automatically generated, and may not be complete or may contain
+duplicates._
+
 # Changelog
 
 ## [v0.3](https://github.com/scientific-python/lazy_loader/tree/v0.3) (2023-06-30)

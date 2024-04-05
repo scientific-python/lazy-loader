@@ -160,10 +160,8 @@ def test_stub_loading_errors(tmp_path):
 
 
 def test_require_kwarg():
-    have_importlib_metadata = importlib.util.find_spec("importlib.metadata") is not None
-    dot = "." if have_importlib_metadata else "_"
     # Test with a module that definitely exists, behavior hinges on requirement
-    with mock.patch(f"importlib{dot}metadata.version") as version:
+    with mock.patch("importlib.metadata.version") as version:
         version.return_value = "1.0.0"
         math = lazy.load("math", require="somepkg >= 2.0")
         assert isinstance(math, lazy.DelayedImportErrorModule)

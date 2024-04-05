@@ -42,6 +42,11 @@ attr = 'lazy_loader.__version__'
 
 [tool.ruff]
 line-length = 88
+exclude = [
+  "lazy_loader/tests/fake_pkg/__init__.pyi",
+]
+
+[tool.ruff.lint]
 select = [
     "C",
     "E",
@@ -52,6 +57,3 @@ select = [
     "UP",
 ]
 ignore = ["B018", "B028"]
-exclude = [
-  "lazy_loader/tests/fake_pkg/__init__.pyi",
-]

@@ -24,6 +24,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install ".[test]"
 
-      - name: Test
-        run: |
-          python -m pytest
+      - name: Run pytest with coverage
+        run: python -m pytest --cov=lazy_loader --durations=10
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: unittests,${{ runner.os }},py${{ matrix.python-version }}

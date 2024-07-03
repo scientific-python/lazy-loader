@@ -5,6 +5,7 @@ lazy_loader
 Makes it easy to load subpackages and functions on demand.
 """
 import ast
+import builtins
 import importlib
 import importlib.util
 import inspect
@@ -12,8 +13,21 @@ import os
 import sys
 import types
 import warnings
+from contextvars import ContextVar
+from importlib.abc import MetaPathFinder
+from importlib.machinery import ModuleSpec
+from typing import Sequence
 
 __all__ = ["attach", "load", "attach_stub"]
+
+inside_context_manager: ContextVar[bool] = ContextVar(
+    'inside_context_manager',
+    default=False,
+)
+searching_spec: ContextVar[bool] = ContextVar(
+    'searching_spec',
+    default=False,
+)
 
 
 def attach(package_name, submodules=None, submod_attrs=None):
@@ -257,11 +271,14 @@ def attach_stub(package_name: str, filename: str):
         incorrectly (e.g. if it contains an relative import from outside of the module)
     """
     stubfile = (
-        filename if filename.endswith("i") else f"{os.path.splitext(filename)[0]}.pyi"
+        filename if filename.endswith("i")
+        else f"{os.path.splitext(filename)[0]}.pyi"
     )
 
     if not os.path.exists(stubfile):
-        raise ValueError(f"Cannot load imports from non-existent stub {stubfile!r}")
+        raise ValueError(
+            f"Cannot load imports from non-existent stub {stubfile!r}",
+        )
 
     with open(stubfile) as f:
         stub_node = ast.parse(f.read())
@@ -269,3 +286,57 @@ def attach_stub(package_name: str, filename: str):
     visitor = _StubVisitor()
     visitor.visit(stub_node)
     return attach(package_name, visitor._submodules, visitor._submod_attrs)
+
+
+class LazyFinder(MetaPathFinder):
+
+    def find_spec(
+        self,
+        fullname: str,
+        path: Sequence[str] | None,
+        target: types.ModuleType | None = ...,
+        / ,
+    ) -> ModuleSpec | None:
+        if not inside_context_manager.get():
+            # We are not in context manager, delegate to normal import
+            return None
+
+        if searching_spec.get():
+            # We are searching for the loader, so we should continue the search
+            return None
+
+        searching_spec.set(True)
+        spec = importlib.util.find_spec(fullname)
+        searching_spec.set(False)
+
+        if spec is None:
+            raise ModuleNotFoundError(f"No module named '{fullname}'")
+
+        spec.loader = importlib.util.LazyLoader(spec.loader)
+
+        return spec
+
+
+sys.meta_path.insert(0, LazyFinder())
+
+
+class lazy_imports:
+    """
+    Context manager that will block imports and make them lazy.
+
+    >>> import lazy_loader
+    >>> with lazy_loader.lazy_imports():
+    >>>     from ._mod import some_func
+
+    """
+
+    def __enter__(self):
+        # Prevent normal importing
+        if inside_context_manager.get():
+            raise ValueError("Nested lazy_imports not allowed.")
+        inside_context_manager.set(True)
+        return self
+
+    def __exit__(self, type, value, tb):
+        # Restore normal importing
+        inside_context_manager.set(False)

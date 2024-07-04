@@ -35,7 +35,7 @@ def test_lazy_import_subpackages():
     with pytest.warns(RuntimeWarning):
         hp = lazy.load("html.parser")
     assert "html" in sys.modules
-    assert type(sys.modules["html"]) == type(pytest)
+    assert type(sys.modules["html"]) is type(pytest)
     assert isinstance(hp, importlib.util._LazyModule)
     assert "html.parser" in sys.modules
     assert sys.modules["html.parser"] == hp

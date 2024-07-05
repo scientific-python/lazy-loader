@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest >= 7.4", "pytest-cov >= 4.1"]
+test = ["pytest >= 8.0", "pytest-cov >= 5.0"]
 lint = ["pre-commit == 3.7.1"]
 dev = ["changelist == 0.5"]
 
@@ -33,11 +33,18 @@ dev = ["changelist == 0.5"]
 Home = "https://scientific-python.org/specs/spec-0001/"
 Source = "https://github.com/scientific-python/lazy-loader"
 
+[tool.setuptools.dynamic.version]
+attr = 'lazy_loader.__version__'
+
 [tool.changelist]
 ignored_user_logins = ["dependabot[bot]", "pre-commit-ci[bot]", "web-flow"]
 
-[tool.setuptools.dynamic.version]
-attr = 'lazy_loader.__version__'
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+filterwarnings = ["error"]
+log_cli_level = "info"
 
 [tool.ruff]
 exclude = [

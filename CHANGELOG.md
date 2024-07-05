@@ -112,7 +112,7 @@ see release notes for v0.2rc0 below for details.
 - Update year [\#43](https://github.com/scientific-python/lazy-loader/pull/43) ([jarrodmillman](https://github.com/jarrodmillman))
 - Update GH actions [\#42](https://github.com/scientific-python/lazy-loader/pull/42) ([jarrodmillman](https://github.com/jarrodmillman))
 - Update pre-commit [\#41](https://github.com/scientific-python/lazy-loader/pull/41) ([jarrodmillman](https://github.com/jarrodmillman))
-- Update optional depedencies [\#40](https://github.com/scientific-python/lazy-loader/pull/40) ([jarrodmillman](https://github.com/jarrodmillman))
+- Update optional dependencies [\#40](https://github.com/scientific-python/lazy-loader/pull/40) ([jarrodmillman](https://github.com/jarrodmillman))
 - Fix extension substitution to work with `\*.pyc` files [\#39](https://github.com/scientific-python/lazy-loader/pull/39) ([Czaki](https://github.com/Czaki))
 - Sort returned \_\_all\_\_ [\#34](https://github.com/scientific-python/lazy-loader/pull/34) ([stefanv](https://github.com/stefanv))
 

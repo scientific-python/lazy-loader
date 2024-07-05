@@ -3,7 +3,7 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: c4a0b883114b00d8d76b479c820ce7950211c99b # frozen: v4.5.0
+    rev: 2c9f875913ee60ca25ce70243dc24d5b6415598c # frozen: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -24,12 +24,12 @@ repos:
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/psf/black
-    rev: 552baf822992936134cbd31a38f69c8cfe7c0f05 # frozen: 24.3.0
+    rev: 3702ba224ecffbcec30af640c149f231d90aebdb # frozen: 24.4.2
     hooks:
       - id: black
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 0ccbb5b7942d83fbcf7cb5e0fd99633efd2351d7 # frozen: v0.3.5
+    rev: 1dc9eb131c2ea4816c708e4d85820d2cc8542683 # frozen: v0.5.0
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]

@@ -186,5 +186,6 @@ def test_parallel_load():
         [
             sys.executable,
             os.path.join(os.path.dirname(__file__), "import_np_parallel.py"),
-        ]
+        ],
+        check=True,
     )

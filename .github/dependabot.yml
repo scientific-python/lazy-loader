@@ -6,9 +6,17 @@ updates:
       interval: "monthly"
     labels:
       - "type: Maintenance"
+    groups:
+      actions:
+        patterns:
+          - "*"
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "monthly"
     labels:
       - "type: Maintenance"
+    groups:
+      actions:
+        patterns:
+          - "*"

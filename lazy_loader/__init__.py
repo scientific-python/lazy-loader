@@ -38,9 +38,7 @@ def attach(package_name, submodules=None, submod_attrs=None):
     The typical way to call this function, replacing the above imports, is::
 
       __getattr__, __dir__, __all__ = lazy.attach(
-        __name__,
-        ['mysubmodule', 'anothersubmodule'],
-        {'foo': ['someattr']}
+          __name__, ["mysubmodule", "anothersubmodule"], {"foo": ["someattr"]}
       )
 
     Parameters
@@ -114,7 +112,7 @@ class DelayedImportErrorModule(types.ModuleType):
             fd = self.__frame_data
             raise ModuleNotFoundError(
                 f"{self.__message}\n\n"
-                "This error is lazily reported, having originally occured in\n"
+                "This error is lazily reported, having originally occurred in\n"
                 f'  File {fd["filename"]}, line {fd["lineno"]}, in {fd["function"]}\n\n'
                 f'----> {"".join(fd["code_context"] or "").strip()}'
             )
@@ -162,7 +160,7 @@ def load(fullname, *, require=None, error_on_import=False):
     fullname : str
         The full name of the module or submodule to import.  For example::
 
-          sp = lazy.load('scipy')  # import scipy as sp
+          sp = lazy.load("scipy")  # import scipy as sp
 
     require : str
         A dependency requirement as defined in PEP-508.  For example::

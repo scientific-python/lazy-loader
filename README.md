@@ -1,8 +1,8 @@
-[![PyPI](https://img.shields.io/pypi/v/lazy_loader)](https://pypi.org/project/lazy_loader/)
+[![PyPI](https://img.shields.io/pypi/v/lazy-loader)](https://pypi.org/project/lazy-loader/)
 [![Test status](https://github.com/scientific-python/lazy-loader/workflows/test/badge.svg?branch=main)](https://github.com/scientific-python/lazy-loader/actions?query=workflow%3A%22test%22)
 [![Test coverage](https://codecov.io/gh/scientific-python/lazy-loader/branch/main/graph/badge.svg)](https://app.codecov.io/gh/scientific-python/lazy-loader/branch/main)
 
-`lazy_loader` makes it easy to load subpackages and functions on demand.
+`lazy-loader` makes it easy to load subpackages and functions on demand.
 
 ## Motivation
 
@@ -14,10 +14,10 @@ For a more detailed discussion, see [the SPEC](https://scientific-python.org/spe
 ## Installation
 
 ```
-pip install -U lazy_loader
+pip install -U lazy-loader
 ```
 
-We recommend using `lazy_loader` with Python >= 3.11.
+We recommend using `lazy-loader` with Python >= 3.11.
 If using Python 3.11, please upgrade to 3.11.9 or later.
 If using Python 3.12, please upgrade to 3.12.3 or later.
 These versions [avoid](https://github.com/python/cpython/pull/114781) a [known race condition](https://github.com/python/cpython/issues/114763).

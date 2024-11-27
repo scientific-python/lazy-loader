@@ -143,6 +143,35 @@ def test_stub_loading_parity():
     assert stub_getter("some_func") == fake_pkg.some_func
 
 
+FAKE_STUB_OVERRIDE_ALL = """
+__all__ = [
+    "rank",
+    "gaussian",
+    "sobel",
+    "scharr",
+    "roberts",
+    # `prewitt` not included!
+    "__version__",  # included but not imported in stub
+]
+
+from . import rank
+from ._gaussian import gaussian
+from .edges import sobel, scharr, prewitt, roberts
+"""
+
+
+def test_stub_override_all(tmp_path):
+    stub = tmp_path / "stub.pyi"
+    stub.write_text(FAKE_STUB_OVERRIDE_ALL)
+    _get, _dir, _all = lazy.attach_stub("my_module", str(stub))
+
+    expect_dir = {"gaussian", "sobel", "scharr", "prewitt", "roberts", "rank"}
+    assert set(_dir()) == expect_dir
+
+    expect_all = {"rank", "gaussian", "sobel", "scharr", "roberts", "__version__"}
+    assert set(_all) == expect_all
+
+
 def test_stub_loading_errors(tmp_path):
     stub = tmp_path / "stub.pyi"
     stub.write_text("from ..mod import func\n")

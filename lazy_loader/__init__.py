@@ -282,6 +282,7 @@ class _StubVisitor(ast.NodeVisitor):
     def __init__(self):
         self._submodules = set()
         self._submod_attrs = {}
+        self._all = None
 
     def visit_ImportFrom(self, node: ast.ImportFrom):
         if node.level != 1:
@@ -300,6 +301,38 @@ class _StubVisitor(ast.NodeVisitor):
         else:
             self._submodules.update(alias.name for alias in node.names)
 
+    def visit_Assign(self, node: ast.Assign):
+        assigned_list = None
+        for name in node.targets:
+            if name.id == "__all__":
+                assigned_list = node.value
+
+        if assigned_list is None:
+            return  # early
+        elif not isinstance(assigned_list, ast.List):
+            msg = (
+                f"expected a list assigned to `__all__`, found {type(assigned_list)!r}"
+            )
+            raise ValueError(msg)
+
+        if self._all is not None:
+            msg = "expected only one definition of `__all__` in stub"
+            raise ValueError(msg)
+        self._all = set()
+
+        for constant in assigned_list.elts:
+            if (
+                not isinstance(constant, ast.Constant)
+                or not isinstance(constant.value, str)
+                or assigned_list == ""
+            ):
+                msg = (
+                    "expected `__all__` to contain only non-empty strings, "
+                    f"got {constant!r}"
+                )
+                raise ValueError(msg)
+            self._all.add(constant.value)
+
 
 def attach_stub(package_name: str, filename: str):
     """Attach lazily loaded submodules, functions from a type stub.
@@ -307,6 +340,10 @@ def attach_stub(package_name: str, filename: str):
     This is a variant on ``attach`` that will parse a `.pyi` stub file to
     infer ``submodules`` and ``submod_attrs``. This allows static type checkers
     to find imports, while still providing lazy loading at runtime.
+
+    If the stub file defines `__all__`, it must contain a simple list of
+    non-empty strings. In this case, the content of `__dir__()` may be
+    intentionally different from `__all__`.
 
     Parameters
     ----------
@@ -339,4 +376,10 @@ def attach_stub(package_name: str, filename: str):
 
     visitor = _StubVisitor()
     visitor.visit(stub_node)
-    return attach(package_name, visitor._submodules, visitor._submod_attrs)
+
+    __getattr__, __dir__, __all__ = attach(
+        package_name, visitor._submodules, visitor._submod_attrs
+    )
+    if visitor._all is not None:
+        __all__ = visitor._all
+    return __getattr__, __dir__, __all__

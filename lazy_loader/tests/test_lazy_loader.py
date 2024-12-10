@@ -124,7 +124,7 @@ def test_lazy_attach_returns_copies():
 
     _all.append("modify_returned_all")
     assert _dir() == expected
-    assert _all == expected + ["modify_returned_all"]
+    assert _all == [*expected, "modify_returned_all"]
 
 
 def test_attach_same_module_and_attr_name():

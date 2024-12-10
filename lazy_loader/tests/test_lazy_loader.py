@@ -104,6 +104,29 @@ def test_lazy_attach():
             assert locls[k] == v
 
 
+def test_lazy_attach_returns_copies():
+    _get, _dir, _all = lazy.attach(
+        __name__, ["my_submodule", "another_submodule"], {"foo": ["some_attr"]}
+    )
+    assert _dir() is not _dir()
+    assert _dir() == _all
+    assert _dir() is not _all
+
+    expected = ["another_submodule", "my_submodule", "some_attr"]
+    assert _dir() == expected
+    assert _all == expected
+    assert _dir() is not _all
+
+    _dir().append("modify_returned_list")
+    assert _dir() == expected
+    assert _all == expected
+    assert _dir() is not _all
+
+    _all.append("modify_returned_all")
+    assert _dir() == expected
+    assert _all == expected + ["modify_returned_all"]
+
+
 def test_attach_same_module_and_attr_name():
     from lazy_loader.tests import fake_pkg
 

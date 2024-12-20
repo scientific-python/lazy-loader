@@ -222,21 +222,19 @@ def load(fullname, *, require=None, error_on_import=False):
                 raise ModuleNotFoundError(not_found_message)
             import inspect
 
-            try:
-                parent = inspect.stack()[1]
-                frame_data = {
-                    "filename": parent.filename,
-                    "lineno": parent.lineno,
-                    "function": parent.function,
-                    "code_context": parent.code_context,
-                }
-                return DelayedImportErrorModule(
-                    frame_data,
-                    "DelayedImportErrorModule",
-                    message=not_found_message,
-                )
-            finally:
-                del parent
+            parent = inspect.stack()[1]
+            frame_data = {
+                "filename": parent.filename,
+                "lineno": parent.lineno,
+                "function": parent.function,
+                "code_context": parent.code_context,
+            }
+            del parent
+            return DelayedImportErrorModule(
+                frame_data,
+                "DelayedImportErrorModule",
+                message=not_found_message,
+            )
 
         if spec is not None:
             module = importlib.util.module_from_spec(spec)

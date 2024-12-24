@@ -1,6 +1,12 @@
 # Install pre-commit hooks via
 # pre-commit install
 
+ci:
+  autofix_prs: false
+  autofix_commit_msg: |
+    '[pre-commit.ci 🤖] Apply code format tools to PR'
+  autoupdate_schedule: quarterly
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b # frozen: v5.0.0

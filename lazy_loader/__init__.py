@@ -15,7 +15,7 @@ import types
 import warnings
 
 __version__ = "0.5rc0.dev0"
-__all__ = ["attach", "load", "attach_stub"]
+__all__ = ["attach", "attach_stub", "load"]
 
 
 threadlock = threading.Lock()

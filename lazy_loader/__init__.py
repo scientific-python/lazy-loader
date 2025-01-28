@@ -90,7 +90,7 @@ def attach(package_name, submodules=None, submod_attrs=None):
             raise AttributeError(f"No {package_name} attribute {name}")
 
     def __dir__():
-        return __all__
+        return list(__all__)
 
     if os.environ.get("EAGER_IMPORT", ""):
         for attr in set(attr_to_modules.keys()) | submodules:

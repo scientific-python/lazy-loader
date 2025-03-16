@@ -193,10 +193,10 @@ def load(fullname, *, require=None, error_on_import=False, suppress_warning=Fals
         if have_module and require is None:
             return module
 
-        if "." in fullname:
+        if not suppress_warning and "." in fullname:
             msg = (
                 "subpackages can technically be lazily loaded, but it causes the "
-                "package to be eagerly loaded even if it is already lazily loaded."
+                "package to be eagerly loaded even if it is already lazily loaded. "
                 "So, you probably shouldn't use subpackages with this lazy feature."
             )
             warnings.warn(msg, RuntimeWarning)

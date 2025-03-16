@@ -118,7 +118,7 @@ class DelayedImportErrorModule(types.ModuleType):
             )
 
 
-def load(fullname, *, require=None, error_on_import=False):
+def load(fullname, *, require=None, error_on_import=False, suppress_warning=False):
     """Return a lazily imported proxy for a module.
 
     We often see the following pattern::
@@ -173,6 +173,10 @@ def load(fullname, *, require=None, error_on_import=False):
     error_on_import : bool
         Whether to postpone raising import errors until the module is accessed.
         If set to `True`, import errors are raised as soon as `load` is called.
+
+    suppress_warning : bool
+        Whether to prevent emitting a warning when loading subpackages.
+        If set to `True`, no warning will occur.
 
     Returns
     -------

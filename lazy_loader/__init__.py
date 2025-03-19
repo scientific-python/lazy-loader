@@ -90,13 +90,13 @@ def attach(package_name, submodules=None, submod_attrs=None):
             raise AttributeError(f"No {package_name} attribute {name}")
 
     def __dir__():
-        return list(__all__)
+        return __all__.copy()
 
     if os.environ.get("EAGER_IMPORT", ""):
         for attr in set(attr_to_modules.keys()) | submodules:
             __getattr__(attr)
 
-    return __getattr__, __dir__, list(__all__)
+    return __getattr__, __dir__, __all__.copy()
 
 
 class DelayedImportErrorModule(types.ModuleType):

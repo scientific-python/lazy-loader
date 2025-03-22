@@ -6,6 +6,7 @@ Makes it easy to load subpackages and functions on demand.
 """
 
 import ast
+import builtins
 import importlib
 import importlib.util
 import os
@@ -13,6 +14,8 @@ import sys
 import threading
 import types
 import warnings
+from collections import defaultdict
+from types import SimpleNamespace
 
 __version__ = "0.5rc0.dev0"
 __all__ = ["attach", "attach_stub", "load"]
@@ -330,11 +333,14 @@ def attach_stub(package_name: str, filename: str):
         incorrectly (e.g. if it contains an relative import from outside of the module)
     """
     stubfile = (
-        filename if filename.endswith("i") else f"{os.path.splitext(filename)[0]}.pyi"
+        filename if filename.endswith("i")
+        else f"{os.path.splitext(filename)[0]}.pyi"
     )
 
     if not os.path.exists(stubfile):
-        raise ValueError(f"Cannot load imports from non-existent stub {stubfile!r}")
+        raise ValueError(
+            f"Cannot load imports from non-existent stub {stubfile!r}",
+        )
 
     with open(stubfile) as f:
         stub_node = ast.parse(f.read())
@@ -342,3 +348,76 @@ def attach_stub(package_name: str, filename: str):
     visitor = _StubVisitor()
     visitor.visit(stub_node)
     return attach(package_name, visitor._submodules, visitor._submod_attrs)
+
+
+PLACEHOLDER = object()
+
+
+class lazy_imports:
+    """
+    Context manager that will block imports and make them lazy.
+
+    >>> import lazy_loader
+    >>> with lazy_loader.lazy_imports():
+    >>>     from ._mod import some_func
+
+    """
+
+    def __init__(self):
+        self.imports = []
+        self.submodules = []
+        self.submod_attrs = defaultdict(list)
+
+    def __enter__(self):
+        # Prevent normal importing
+        self.import_fun = builtins.__import__
+        builtins.__import__ = self._my_import
+        return self
+
+    def __exit__(self, type, value, tb):
+        # Restore importing
+        builtins.__import__ = self.import_fun
+
+        last_frame = inspect.currentframe().f_back
+
+        # Remove imported things
+        for submod in self.submodules:
+            mod = submod.partition(".")[0]
+            del last_frame.f_globals[mod]
+
+        for mod, attr_list in self.submod_attrs.items():
+            for attr in attr_list:
+                del last_frame.f_globals[attr]
+
+        # Inject the outputs into the module globals
+        package_name = last_frame.f_globals["__name__"]
+        g, d, a = attach(
+            package_name,
+            self.submodules,
+            self.submod_attrs,
+        )
+
+        last_frame.f_globals["__getattr__"] = g
+        last_frame.f_globals["__dir__"] = d
+        last_frame.f_globals["__all__"] = a
+
+    def _my_import(self, name, globals=None, locals=None, fromlist=(), level=0):
+        builtins.__import__ = self.import_fun
+        self.imports.append(
+            {"name": name, "fromlist": fromlist, "level": level}
+        )
+        if fromlist is None:
+            raise NotImplementedError(
+                "Absolute imports are not currently "
+                "supported by lazy_loader."
+            )
+        elif name == "":
+            self.submodules.extend(fromlist)
+        else:
+            self.submod_attrs[name].extend(fromlist)
+
+        builtins.__import__ = self._my_import
+
+        if fromlist:
+            return SimpleNamespace(**{k: PLACEHOLDER for k in fromlist})
+        return PLACEHOLDER

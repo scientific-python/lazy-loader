@@ -1,4 +1,4 @@
-# Release process for `lazy_loader`
+# Release process for `lazy-loader`
 
 ## Introduction
 
@@ -17,7 +17,7 @@ Example `version number`
       export VERSION=<version number>
       export PREVIOUS=<previous version number>
       export ORG="scientific-python"
-      export REPO="lazy_loader"
+      export REPO="lazy-loader"
       export LOG="CHANGELOG.md"
 
 - Autogenerate release notes
@@ -46,17 +46,17 @@ Example `version number`
 
       git push --tags origin main
 
-  where `origin` is the name of the `github.com:scientific-python/lazy_loader`
+  where `origin` is the name of the `github.com:scientific-python/lazy-loader`
   repository
 
 - Create release from tag
 
-      - go to https://github.com/scientific-python/lazy_loader/releases/new?tag=v${VERSION}
+      - go to https://github.com/scientific-python/lazy-loader/releases/new?tag=v${VERSION}
       - add v${VERSION} for the `Release title`
       - paste contents (or upload) of ${VERSION}.md in the `Describe this release section`
       - if pre-release check the box labelled `Set as a pre-release`
 
-- Update https://github.com/scientific-python/lazy_loader/milestones:
+- Update https://github.com/scientific-python/lazy-loader/milestones:
 
       - close old milestone
       - ensure new milestone exists (perhaps setting due date)

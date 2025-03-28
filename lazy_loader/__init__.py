@@ -15,7 +15,7 @@ import types
 import warnings
 
 __version__ = "0.5rc0.dev0"
-__all__ = ["attach", "load", "attach_stub"]
+__all__ = ["attach", "attach_stub", "load"]
 
 
 threadlock = threading.Lock()
@@ -38,9 +38,7 @@ def attach(package_name, submodules=None, submod_attrs=None):
     The typical way to call this function, replacing the above imports, is::
 
       __getattr__, __dir__, __all__ = lazy.attach(
-        __name__,
-        ['mysubmodule', 'anothersubmodule'],
-        {'foo': ['someattr']}
+          __name__, ["mysubmodule", "anothersubmodule"], {"foo": ["someattr"]}
       )
 
     Parameters
@@ -92,13 +90,13 @@ def attach(package_name, submodules=None, submod_attrs=None):
             raise AttributeError(f"No {package_name} attribute {name}")
 
     def __dir__():
-        return __all__
+        return __all__.copy()
 
     if os.environ.get("EAGER_IMPORT", ""):
         for attr in set(attr_to_modules.keys()) | submodules:
             __getattr__(attr)
 
-    return __getattr__, __dir__, list(__all__)
+    return __getattr__, __dir__, __all__.copy()
 
 
 class DelayedImportErrorModule(types.ModuleType):
@@ -114,13 +112,13 @@ class DelayedImportErrorModule(types.ModuleType):
             fd = self.__frame_data
             raise ModuleNotFoundError(
                 f"{self.__message}\n\n"
-                "This error is lazily reported, having originally occured in\n"
+                "This error is lazily reported, having originally occurred in\n"
                 f'  File {fd["filename"]}, line {fd["lineno"]}, in {fd["function"]}\n\n'
                 f'----> {"".join(fd["code_context"] or "").strip()}'
             )
 
 
-def load(fullname, *, require=None, error_on_import=False):
+def load(fullname, *, require=None, error_on_import=False, suppress_warning=False):
     """Return a lazily imported proxy for a module.
 
     We often see the following pattern::
@@ -162,7 +160,7 @@ def load(fullname, *, require=None, error_on_import=False):
     fullname : str
         The full name of the module or submodule to import.  For example::
 
-          sp = lazy.load('scipy')  # import scipy as sp
+          sp = lazy.load("scipy")  # import scipy as sp
 
     require : str
         A dependency requirement as defined in PEP-508.  For example::
@@ -175,6 +173,10 @@ def load(fullname, *, require=None, error_on_import=False):
     error_on_import : bool
         Whether to postpone raising import errors until the module is accessed.
         If set to `True`, import errors are raised as soon as `load` is called.
+
+    suppress_warning : bool
+        Whether to prevent emitting a warning when loading subpackages.
+        If set to `True`, no warning will occur.
 
     Returns
     -------
@@ -191,10 +193,10 @@ def load(fullname, *, require=None, error_on_import=False):
         if have_module and require is None:
             return module
 
-        if "." in fullname:
+        if not suppress_warning and "." in fullname:
             msg = (
                 "subpackages can technically be lazily loaded, but it causes the "
-                "package to be eagerly loaded even if it is already lazily loaded."
+                "package to be eagerly loaded even if it is already lazily loaded. "
                 "So, you probably shouldn't use subpackages with this lazy feature."
             )
             warnings.warn(msg, RuntimeWarning)
@@ -224,21 +226,19 @@ def load(fullname, *, require=None, error_on_import=False):
                 raise ModuleNotFoundError(not_found_message)
             import inspect
 
-            try:
-                parent = inspect.stack()[1]
-                frame_data = {
-                    "filename": parent.filename,
-                    "lineno": parent.lineno,
-                    "function": parent.function,
-                    "code_context": parent.code_context,
-                }
-                return DelayedImportErrorModule(
-                    frame_data,
-                    "DelayedImportErrorModule",
-                    message=not_found_message,
-                )
-            finally:
-                del parent
+            parent = inspect.stack()[1]
+            frame_data = {
+                "filename": parent.filename,
+                "lineno": parent.lineno,
+                "function": parent.function,
+                "code_context": parent.code_context,
+            }
+            del parent
+            return DelayedImportErrorModule(
+                frame_data,
+                "DelayedImportErrorModule",
+                message=not_found_message,
+            )
 
         if spec is not None:
             module = importlib.util.module_from_spec(spec)

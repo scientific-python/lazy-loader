@@ -35,7 +35,7 @@ def test_lazy_import_subpackages():
     with pytest.warns(RuntimeWarning):
         hp = lazy.load("html.parser")
     assert "html" in sys.modules
-    assert type(sys.modules["html"]) == type(pytest)
+    assert type(sys.modules["html"]) is type(pytest)
     assert isinstance(hp, importlib.util._LazyModule)
     assert "html.parser" in sys.modules
     assert sys.modules["html.parser"] == hp
@@ -102,6 +102,29 @@ def test_lazy_attach():
     for k, v in expected.items():
         if v is not None:
             assert locls[k] == v
+
+
+def test_lazy_attach_returns_copies():
+    _get, _dir, _all = lazy.attach(
+        __name__, ["my_submodule", "another_submodule"], {"foo": ["some_attr"]}
+    )
+    assert _dir() is not _dir()
+    assert _dir() == _all
+    assert _dir() is not _all
+
+    expected = ["another_submodule", "my_submodule", "some_attr"]
+    assert _dir() == expected
+    assert _all == expected
+    assert _dir() is not _all
+
+    _dir().append("modify_returned_list")
+    assert _dir() == expected
+    assert _all == expected
+    assert _dir() is not _all
+
+    _all.append("modify_returned_all")
+    assert _dir() == expected
+    assert _all == [*expected, "modify_returned_all"]
 
 
 def test_attach_same_module_and_attr_name():
@@ -186,5 +209,6 @@ def test_parallel_load():
         [
             sys.executable,
             os.path.join(os.path.dirname(__file__), "import_np_parallel.py"),
-        ]
+        ],
+        check=True,
     )

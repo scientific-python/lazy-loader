@@ -1,9 +1,15 @@
 # Install pre-commit hooks via
 # pre-commit install
 
+ci:
+  autofix_prs: false
+  autofix_commit_msg: |
+    '[pre-commit.ci 🤖] Apply code format tools to PR'
+  autoupdate_schedule: quarterly
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: c4a0b883114b00d8d76b479c820ce7950211c99b # frozen: v4.5.0
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b # frozen: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -16,20 +22,21 @@ repos:
       - id: check-toml
       - id: check-added-large-files
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: ffb6a759a979008c0e6dff86e39f4745a2d9eac4 # frozen: v3.1.0
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: bc7af46104f0f5368b95878decf720f9f00c2559 # frozen: v3.4.2
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml|toml)
         args: [--prose-wrap=preserve]
 
-  - repo: https://github.com/psf/black
-    rev: 552baf822992936134cbd31a38f69c8cfe7c0f05 # frozen: 24.3.0
-    hooks:
-      - id: black
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 0ccbb5b7942d83fbcf7cb5e0fd99633efd2351d7 # frozen: v0.3.5
+    rev: 89c421dff2e1026ba12cdb9ebd731f4a83aa8021 # frozen: v0.8.6
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: ["--fix", "--show-fixes", "--exit-non-zero-on-fix"]
+      - id: ruff-format
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: "193cd7d27cd571f79358af09a8fb8997e54f8fff" # frozen: v2.3.0
+    hooks:
+      - id: codespell

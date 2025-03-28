@@ -1,6 +1,10 @@
 name: test
 
-on: [push, pull_request]
+on: [workflow_dispatch, push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   default:
@@ -9,7 +13,7 @@ jobs:
       matrix:
         os: [ubuntu, macos, windows]
         python-version:
-          ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy-3.8", "pypy-3.9"]
+          ["3.9", "3.10", "3.11", "3.12", "3.13", "pypy-3.9", "pypy-3.10"]
 
     steps:
       - uses: actions/checkout@v4

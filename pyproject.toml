@@ -48,7 +48,7 @@ log_cli_level = "info"
 
 [tool.ruff]
 exclude = [
-  "lazy_loader/tests/fake_pkg/__init__.pyi",
+  "tests/fake_pkg/__init__.pyi",
 ]
 
 [tool.ruff.lint]

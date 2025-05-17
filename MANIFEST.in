@@ -1,2 +1,9 @@
 include CHANGELOG.md
+include .spin/cmds.py
 recursive-include tests *
+
+global-exclude *~
+global-exclude *.pyc
+
+prune */.pytest_cache
+prune */__pycache__

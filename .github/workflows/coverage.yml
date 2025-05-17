@@ -29,7 +29,7 @@ jobs:
 
       - name: Measure test coverage
         run: |
-          python -m pytest --cov=lazy_loader --durations=10
+          python -m pytest --cov --durations=10
           # Tests fail if using `--doctest-modules`. I.e.,
           # python -m pytest --cov=lazy_loader --doctest-modules --durations=20
 

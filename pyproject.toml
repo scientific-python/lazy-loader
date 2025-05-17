@@ -3,15 +3,14 @@ requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "lazy_loader"
+name = "lazy-loader"
 requires-python = ">=3.9"
 authors = [{name = "Scientific Python Developers"}]
 readme = "README.md"
-license = {file = "LICENSE.md"}
+license = "BSD-3-Clause"
 dynamic = ['version']
 classifiers = [
   "Development Status :: 5 - Production/Stable",
-  "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -27,7 +26,7 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest >= 8.0", "pytest-cov >= 5.0", "coverage[toml] >= 7.2"]
 lint = ["pre-commit == 4.2.0"]
-dev = ["changelist == 0.5"]
+dev = ["changelist == 0.5", "spin == 0.14"]
 
 [project.urls]
 Home = "https://scientific-python.org/specs/spec-0001/"
@@ -101,4 +100,14 @@ source = ["lazy_loader", "tests"]
 source = [
   "src/lazy_loader",
   "*/site-packages/lazy_loader",
+]
+
+[tool.spin]
+package = 'lazy_loader'
+
+[tool.spin.commands]
+Build = [
+    'spin.cmds.pip.install',
+    '.spin/cmds.py:test',
+    'spin.cmds.build.sdist',
 ]

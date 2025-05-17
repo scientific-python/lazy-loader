@@ -26,8 +26,8 @@ jobs:
       - name: Build wheels
         run: |
           git clean -fxd
-          pip install -U build twine wheel
-          python -m build --sdist --wheel
+          pip install -U build twine wheel spin
+          spin sdist -- --wheel
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

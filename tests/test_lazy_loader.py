@@ -37,18 +37,12 @@ def test_lazy_import_basics():
     # Now test that accessing attributes does what it should
     assert math.sin(math.pi) == pytest.approx(0, 1e-6)
     # poor-mans pytest.raises for testing errors on attribute access
-    try:
+    with pytest.raises(ModuleNotFoundError):
         anything_not_real.pi
-        raise AssertionError()  # Should not get here
-    except ModuleNotFoundError:
-        pass
     assert isinstance(anything_not_real, lazy.DelayedImportErrorModule)
     # see if it changes for second access
-    try:
+    with pytest.raises(ModuleNotFoundError):
         anything_not_real.pi
-        raise AssertionError()  # Should not get here
-    except ModuleNotFoundError:
-        pass
 
 
 def test_lazy_import_subpackages():
@@ -88,11 +82,8 @@ def test_lazy_import_nonbuiltins():
     if not isinstance(np, lazy.DelayedImportErrorModule):
         assert np.sin(np.pi) == pytest.approx(0, 1e-6)
     if isinstance(sp, lazy.DelayedImportErrorModule):
-        try:
+        with pytest.raises(ModuleNotFoundError):
             sp.pi
-            raise AssertionError()
-        except ModuleNotFoundError:
-            pass
 
 
 def test_lazy_attach():

@@ -10,6 +10,26 @@ import pytest
 import lazy_loader as lazy
 
 
+@pytest.fixture
+def clean_fake_pkg():
+    yield
+    sys.modules.pop("tests.fake_pkg.some_func", None)
+    sys.modules.pop("tests.fake_pkg", None)
+    sys.modules.pop("tests", None)
+
+
+@pytest.mark.parametrize("attempt", [1, 2])
+def test_cleanup_fixture(clean_fake_pkg, attempt):
+    assert "tests.fake_pkg" not in sys.modules
+    assert "tests.fake_pkg.some_func" not in sys.modules
+    from tests import fake_pkg
+
+    assert "tests.fake_pkg" in sys.modules
+    assert "tests.fake_pkg.some_func" not in sys.modules
+    assert isinstance(fake_pkg.some_func, types.FunctionType)
+    assert "tests.fake_pkg.some_func" in sys.modules
+
+
 def test_lazy_import_basics():
     math = lazy.load("math")
     anything_not_real = lazy.load("anything_not_real")
@@ -127,18 +147,24 @@ def test_lazy_attach_returns_copies():
     assert _all == [*expected, "modify_returned_all"]
 
 
-def test_attach_same_module_and_attr_name():
-    from tests import fake_pkg
+@pytest.mark.parametrize("eager_import", [False, True])
+def test_attach_same_module_and_attr_name(clean_fake_pkg, eager_import):
+    env = {}
+    if eager_import:
+        env["EAGER_IMPORT"] = "1"
 
-    # Grab attribute twice, to ensure that importing it does not
-    # override function by module
-    assert isinstance(fake_pkg.some_func, types.FunctionType)
-    assert isinstance(fake_pkg.some_func, types.FunctionType)
+    with mock.patch.dict(os.environ, env):
+        from tests import fake_pkg
 
-    # Ensure imports from submodule still work
-    from tests.fake_pkg.some_func import some_func
+        # Grab attribute twice, to ensure that importing it does not
+        # override function by module
+        assert isinstance(fake_pkg.some_func, types.FunctionType)
+        assert isinstance(fake_pkg.some_func, types.FunctionType)
 
-    assert isinstance(some_func, types.FunctionType)
+        # Ensure imports from submodule still work
+        from tests.fake_pkg.some_func import some_func
+
+        assert isinstance(some_func, types.FunctionType)
 
 
 FAKE_STUB = """

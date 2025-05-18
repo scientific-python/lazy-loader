@@ -136,6 +136,14 @@ def test_lazy_attach():
         locls["__getattr__"]("unknown_attr")
 
 
+def test_lazy_attach_noattrs():
+    name = "mymod"
+    submods = ["mysubmodule", "anothersubmodule"]
+    _, _, all_ = lazy.attach(name, submods)
+
+    assert all_ == sorted(submods)
+
+
 def test_lazy_attach_returns_copies():
     _get, _dir, _all = lazy.attach(
         __name__, ["my_submodule", "another_submodule"], {"foo": ["some_attr"]}

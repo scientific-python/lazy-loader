@@ -106,16 +106,13 @@ class DelayedImportErrorModule(types.ModuleType):
         super().__init__(*args, **kwargs)
 
     def __getattr__(self, x):
-        if x in ("__class__", "__file__", "__frame_data", "__message"):
-            super().__getattr__(x)
-        else:
-            fd = self.__frame_data
-            raise ModuleNotFoundError(
-                f"{self.__message}\n\n"
-                "This error is lazily reported, having originally occurred in\n"
-                f"  File {fd['filename']}, line {fd['lineno']}, in {fd['function']}\n\n"
-                f"----> {''.join(fd['code_context'] or '').strip()}"
-            )
+        fd = self.__frame_data
+        raise ModuleNotFoundError(
+            f"{self.__message}\n\n"
+            "This error is lazily reported, having originally occurred in\n"
+            f"  File {fd['filename']}, line {fd['lineno']}, in {fd['function']}\n\n"
+            f"----> {''.join(fd['code_context'] or '').strip()}"
+        )
 
 
 def load(fullname, *, require=None, error_on_import=False, suppress_warning=False):

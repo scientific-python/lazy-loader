@@ -1,1 +1,1 @@
-from .some_func import some_func
+from .some_func import aux_func, some_func

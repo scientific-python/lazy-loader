@@ -123,6 +123,18 @@ def test_lazy_attach():
         if v is not None:
             assert locls[k] == v
 
+    # Exercise __getattr__, though it will just error
+    with pytest.raises(ImportError):
+        locls["__getattr__"]("mysubmodule")
+
+    # Attribute is supposed to be imported, error on submodule load
+    with pytest.raises(ImportError):
+        locls["__getattr__"]("some_var_or_func")
+
+    # Attribute is unknown, raise AttributeError
+    with pytest.raises(AttributeError):
+        locls["__getattr__"]("unknown_attr")
+
 
 def test_lazy_attach_returns_copies():
     _get, _dir, _all = lazy.attach(
@@ -221,6 +233,10 @@ def test_require_kwarg():
         # We can fail even after a successful import
         math = lazy.load("math", require="somepkg >= 2.0")
         assert isinstance(math, lazy.DelayedImportErrorModule)
+
+        # Eager failure
+        with pytest.raises(ModuleNotFoundError):
+            lazy.load("math", require="somepkg >= 2.0", error_on_import=True)
 
     # When a module can be loaded but the version can't be checked,
     # raise a ValueError

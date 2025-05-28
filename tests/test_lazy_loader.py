@@ -10,6 +10,26 @@ import pytest
 import lazy_loader as lazy
 
 
+@pytest.fixture
+def clean_fake_pkg():
+    yield
+    sys.modules.pop("tests.fake_pkg.some_func", None)
+    sys.modules.pop("tests.fake_pkg", None)
+    sys.modules.pop("tests", None)
+
+
+@pytest.mark.parametrize("attempt", [1, 2])
+def test_cleanup_fixture(clean_fake_pkg, attempt):
+    assert "tests.fake_pkg" not in sys.modules
+    assert "tests.fake_pkg.some_func" not in sys.modules
+    from tests import fake_pkg
+
+    assert "tests.fake_pkg" in sys.modules
+    assert "tests.fake_pkg.some_func" not in sys.modules
+    assert isinstance(fake_pkg.some_func, types.FunctionType)
+    assert "tests.fake_pkg.some_func" in sys.modules
+
+
 def test_lazy_import_basics():
     math = lazy.load("math")
     anything_not_real = lazy.load("anything_not_real")
@@ -17,18 +37,12 @@ def test_lazy_import_basics():
     # Now test that accessing attributes does what it should
     assert math.sin(math.pi) == pytest.approx(0, 1e-6)
     # poor-mans pytest.raises for testing errors on attribute access
-    try:
+    with pytest.raises(ModuleNotFoundError):
         anything_not_real.pi
-        raise AssertionError()  # Should not get here
-    except ModuleNotFoundError:
-        pass
     assert isinstance(anything_not_real, lazy.DelayedImportErrorModule)
     # see if it changes for second access
-    try:
+    with pytest.raises(ModuleNotFoundError):
         anything_not_real.pi
-        raise AssertionError()  # Should not get here
-    except ModuleNotFoundError:
-        pass
 
 
 def test_lazy_import_subpackages():
@@ -68,11 +82,8 @@ def test_lazy_import_nonbuiltins():
     if not isinstance(np, lazy.DelayedImportErrorModule):
         assert np.sin(np.pi) == pytest.approx(0, 1e-6)
     if isinstance(sp, lazy.DelayedImportErrorModule):
-        try:
+        with pytest.raises(ModuleNotFoundError):
             sp.pi
-            raise AssertionError()
-        except ModuleNotFoundError:
-            pass
 
 
 def test_lazy_attach():
@@ -103,6 +114,26 @@ def test_lazy_attach():
         if v is not None:
             assert locls[k] == v
 
+    # Exercise __getattr__, though it will just error
+    with pytest.raises(ImportError):
+        locls["__getattr__"]("mysubmodule")
+
+    # Attribute is supposed to be imported, error on submodule load
+    with pytest.raises(ImportError):
+        locls["__getattr__"]("some_var_or_func")
+
+    # Attribute is unknown, raise AttributeError
+    with pytest.raises(AttributeError):
+        locls["__getattr__"]("unknown_attr")
+
+
+def test_lazy_attach_noattrs():
+    name = "mymod"
+    submods = ["mysubmodule", "anothersubmodule"]
+    _, _, all_ = lazy.attach(name, submods)
+
+    assert all_ == sorted(submods)
+
 
 def test_lazy_attach_returns_copies():
     _get, _dir, _all = lazy.attach(
@@ -127,18 +158,24 @@ def test_lazy_attach_returns_copies():
     assert _all == [*expected, "modify_returned_all"]
 
 
-def test_attach_same_module_and_attr_name():
-    from tests import fake_pkg
+@pytest.mark.parametrize("eager_import", [False, True])
+def test_attach_same_module_and_attr_name(clean_fake_pkg, eager_import):
+    env = {}
+    if eager_import:
+        env["EAGER_IMPORT"] = "1"
 
-    # Grab attribute twice, to ensure that importing it does not
-    # override function by module
-    assert isinstance(fake_pkg.some_func, types.FunctionType)
-    assert isinstance(fake_pkg.some_func, types.FunctionType)
+    with mock.patch.dict(os.environ, env):
+        from tests import fake_pkg
 
-    # Ensure imports from submodule still work
-    from tests.fake_pkg.some_func import some_func
+        # Grab attribute twice, to ensure that importing it does not
+        # override function by module
+        assert isinstance(fake_pkg.some_func, types.FunctionType)
+        assert isinstance(fake_pkg.some_func, types.FunctionType)
 
-    assert isinstance(some_func, types.FunctionType)
+        # Ensure imports from submodule still work
+        from tests.fake_pkg.some_func import some_func
+
+        assert isinstance(some_func, types.FunctionType)
 
 
 FAKE_STUB = """
@@ -195,6 +232,10 @@ def test_require_kwarg():
         # We can fail even after a successful import
         math = lazy.load("math", require="somepkg >= 2.0")
         assert isinstance(math, lazy.DelayedImportErrorModule)
+
+        # Eager failure
+        with pytest.raises(ModuleNotFoundError):
+            lazy.load("math", require="somepkg >= 2.0", error_on_import=True)
 
     # When a module can be loaded but the version can't be checked,
     # raise a ValueError

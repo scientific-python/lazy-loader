@@ -3,7 +3,10 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "cron"
+      cronjob: "0 1 15 * *" # 1am on 15th of each month
+    cooldown:
+      default-days: 14
     labels:
       - "type: Maintenance"
     groups:
@@ -13,7 +16,10 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "cron"
+      cronjob: "0 1 15 * *" # 1am on 15th of each month
+    cooldown:
+      default-days: 14
     labels:
       - "type: Maintenance"
     groups:

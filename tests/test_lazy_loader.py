@@ -215,7 +215,7 @@ def test_stub_loading_errors(tmp_path):
 
     stub2 = tmp_path / "stub2.pyi"
     stub2.write_text("from .mod import *\n")
-    with pytest.raises(ValueError, match=".*does not support star import"):
+    with pytest.raises(ValueError, match=r".*does not support star import"):
         lazy.attach_stub("name", str(stub2))
 
 

@@ -92,7 +92,8 @@ def attach(package_name, submodules=None, submod_attrs=None):
     def __dir__():
         return __all__.copy()
 
-    if os.environ.get("EAGER_IMPORT", ""):
+    eager_import = os.environ.get("EAGER_IMPORT", "") != "0"
+    if eager_import:
         for attr in set(attr_to_modules.keys()) | submodules:
             __getattr__(attr)
 

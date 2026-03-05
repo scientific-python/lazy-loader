@@ -99,7 +99,7 @@ detail](https://scientific-python.org/specs/spec-0001/#type-checkers).
 
 With lazy loading, missing imports no longer fail upon loading the
 library. During development and testing, you can set the `EAGER_IMPORT`
-environment variable to disable lazy loading.
+environment variable to "1" or "true" to disable lazy loading ("0" or "" re-enables lazy loading).
 
 ### External libraries
 

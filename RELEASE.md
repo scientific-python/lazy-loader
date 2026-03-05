@@ -26,13 +26,13 @@ Example `version number`
 
 - Put the output of the above command at the top of `CHANGELOG.md`
 
-      cat ${VERSION}.md | cat - ${LOG} > temp && mv temp ${LOG}
+      cat ${VERSION}.md | cat - ${LOG} > temp && mv temp ${LOG}ch
 
-- Update `version` in `lazy_loader/__init__.py`.
+- Update `version` in `src/lazy-loader/__init__.py`.
 
 - Commit changes:
 
-      git add lazy_loader/__init__.py ${LOG}
+      git add src/lazy-loader/__init__.py ${LOG}
       git commit -m "Designate ${VERSION} release"
 
 - Tag the release in git:
@@ -61,10 +61,10 @@ Example `version number`
       - close old milestone
       - ensure new milestone exists (perhaps setting due date)
 
-- Update `version` in `lazy_loader/__init__.py`.
+- Update `version` in `src/lazy-loader/__init__.py`.
 
 - Commit changes:
 
-      git add lazy_loader/__init__.py
+      git add src/lazy-loader/__init__.py
       git commit -m 'Bump version'
       git push origin main

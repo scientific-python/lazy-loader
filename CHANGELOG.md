@@ -1,3 +1,67 @@
+# lazy-loader 0.5
+
+## Enhancements
+
+- Add `suppress_warning` parameter to the `load` function ([#146](https://github.com/scientific-python/lazy-loader/pull/146)).
+
+## Bug Fixes
+
+- fix: Remove problematic try/finally block ([#137](https://github.com/scientific-python/lazy-loader/pull/137)).
+- Make sure that `__dir__` returns new copies of `__all__` ([#135](https://github.com/scientific-python/lazy-loader/pull/135)).
+- Allow disabled eager loading with EAGER_IMPORT=0 ([#166](https://github.com/scientific-python/lazy-loader/pull/166)).
+
+## Documentation
+
+- Update release process doc ([#105](https://github.com/scientific-python/lazy-loader/pull/105)).
+
+## Maintenance
+
+- Drop Python 3.7 support ([#106](https://github.com/scientific-python/lazy-loader/pull/106)).
+- Update ruff config ([#110](https://github.com/scientific-python/lazy-loader/pull/110)).
+- Update label check action ([#112](https://github.com/scientific-python/lazy-loader/pull/112)).
+- Rename repo to match package name ([#119](https://github.com/scientific-python/lazy-loader/pull/119)).
+- Test on Python 3.13 development releases ([#120](https://github.com/scientific-python/lazy-loader/pull/120)).
+- Update pre-commit ([#122](https://github.com/scientific-python/lazy-loader/pull/122)).
+- Update ruff config ([#123](https://github.com/scientific-python/lazy-loader/pull/123)).
+- Update GH actions ([#124](https://github.com/scientific-python/lazy-loader/pull/124)).
+- Add codespell pre-commit ([#125](https://github.com/scientific-python/lazy-loader/pull/125)).
+- Update pytest config ([#126](https://github.com/scientific-python/lazy-loader/pull/126)).
+- Update pre-commit (12/2024) ([#138](https://github.com/scientific-python/lazy-loader/pull/138)).
+- Support Python 3.13 ([#139](https://github.com/scientific-python/lazy-loader/pull/139)).
+- Drop Python 3.8 support ([#140](https://github.com/scientific-python/lazy-loader/pull/140)).
+- rf: Use list.copy() instead of list() ([#148](https://github.com/scientific-python/lazy-loader/pull/148)).
+- Switch to src layout, move tests to root ([#151](https://github.com/scientific-python/lazy-loader/pull/151)).
+- Update development status as Production/Stable ([#108](https://github.com/scientific-python/lazy-loader/pull/108)).
+- Add spin configuration ([#152](https://github.com/scientific-python/lazy-loader/pull/152)).
+- test: Update test cases to get full coverage ([#153](https://github.com/scientific-python/lazy-loader/pull/153)).
+- Support for Python 3.14 ([#158](https://github.com/scientific-python/lazy-loader/pull/158)).
+- Set dependabot cooldown and schedule for 15th of each month ([#162](https://github.com/scientific-python/lazy-loader/pull/162)).
+
+## Contributors
+
+7 authors added to this release (alphabetically):
+
+- Brigitta Sipőcz ([@bsipocz](https://github.com/bsipocz))
+- Chris Markiewicz ([@effigies](https://github.com/effigies))
+- Jarrod Millman ([@jarrodmillman](https://github.com/jarrodmillman))
+- Lars Grüter ([@lagru](https://github.com/lagru))
+- Mark Harfouche ([@hmaarrfk](https://github.com/hmaarrfk))
+- Ofek Lev ([@ofek](https://github.com/ofek))
+- Stefan van der Walt ([@stefanv](https://github.com/stefanv))
+
+7 reviewers added to this release (alphabetically):
+
+- Brigitta Sipőcz ([@bsipocz](https://github.com/bsipocz))
+- Chris Markiewicz ([@effigies](https://github.com/effigies))
+- Dan Schult ([@dschult](https://github.com/dschult))
+- Jarrod Millman ([@jarrodmillman](https://github.com/jarrodmillman))
+- Lars Grüter ([@lagru](https://github.com/lagru))
+- Ofek Lev ([@ofek](https://github.com/ofek))
+- Stefan van der Walt ([@stefanv](https://github.com/stefanv))
+
+_These lists are automatically generated, and may not be complete or may contain
+duplicates._
+
 # lazy-loader 0.4
 
 We're happy to announce the release of lazy-loader 0.4!

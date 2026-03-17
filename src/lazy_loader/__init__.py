@@ -13,7 +13,6 @@ import sys
 import threading
 import types
 import warnings
-from functools import partial
 
 __version__ = "0.6rc0.dev0"
 __all__ = ["attach", "attach_stub", "load"]
@@ -58,7 +57,8 @@ def attach(
         These attributes are imported as they are used.
     lazy_submodules : bool
         Whether to lazily load submodules. If set to `True`, submodules are
-        returned as lazy proxies.
+        returned as lazy proxies. Note that attribute access from
+        submod_attrs will trigger the import of the submodule.
 
     Returns
     -------
@@ -73,11 +73,6 @@ def attach(
     else:
         submodules = set(submodules)
 
-    if lazy_submodules:
-        import_func = partial(load, suppress_warning=True)
-    else:
-        import_func = importlib.import_module
-
     attr_to_modules = {
         attr: mod for mod, attrs in submod_attrs.items() for attr in attrs
     }
@@ -86,10 +81,14 @@ def attach(
 
     def __getattr__(name):
         if name in submodules:
-            return import_func(f"{package_name}.{name}")
+            submod_path = f"{package_name}.{name}"
+            if lazy_submodules:
+                return load(submod_path, suppress_warning=True)
+            else:
+                return importlib.import_module(submod_path)
         elif name in attr_to_modules:
             submod_path = f"{package_name}.{attr_to_modules[name]}"
-            submod = import_func(submod_path)
+            submod = importlib.import_module(submod_path)
             attr = getattr(submod, name)
 
             # If the attribute lives in a file (module) with the same

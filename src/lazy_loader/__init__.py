@@ -13,6 +13,7 @@ import sys
 import threading
 import types
 import warnings
+from functools import partial
 
 __version__ = "0.6rc0.dev0"
 __all__ = ["attach", "attach_stub", "load"]
@@ -21,7 +22,12 @@ __all__ = ["attach", "attach_stub", "load"]
 threadlock = threading.Lock()
 
 
-def attach(package_name, submodules=None, submod_attrs=None):
+def attach(
+    package_name,
+    submodules=None,
+    submod_attrs=None,
+    lazy_submodules=False,
+):
     """Attach lazily loaded submodules, functions, or other attributes.
 
     Typically, modules import submodules and attributes as follows::
@@ -50,6 +56,9 @@ def attach(package_name, submodules=None, submod_attrs=None):
     submod_attrs : dict
         Dictionary of submodule -> list of attributes / functions.
         These attributes are imported as they are used.
+    lazy_submodules : bool
+        Whether to lazily load submodules. If set to `True`, submodules are
+        returned as lazy proxies.
 
     Returns
     -------
@@ -64,6 +73,11 @@ def attach(package_name, submodules=None, submod_attrs=None):
     else:
         submodules = set(submodules)
 
+    if lazy_submodules:
+        import_func = partial(load, suppress_warning=True)
+    else:
+        import_func = importlib.import_module
+
     attr_to_modules = {
         attr: mod for mod, attrs in submod_attrs.items() for attr in attrs
     }
@@ -72,10 +86,10 @@ def attach(package_name, submodules=None, submod_attrs=None):
 
     def __getattr__(name):
         if name in submodules:
-            return importlib.import_module(f"{package_name}.{name}")
+            return import_func(f"{package_name}.{name}")
         elif name in attr_to_modules:
             submod_path = f"{package_name}.{attr_to_modules[name]}"
-            submod = importlib.import_module(submod_path)
+            submod = import_func(submod_path)
             attr = getattr(submod, name)
 
             # If the attribute lives in a file (module) with the same

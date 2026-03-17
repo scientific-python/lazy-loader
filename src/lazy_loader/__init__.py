@@ -21,7 +21,12 @@ __all__ = ["attach", "attach_stub", "load"]
 threadlock = threading.Lock()
 
 
-def attach(package_name, submodules=None, submod_attrs=None):
+def attach(
+    package_name,
+    submodules=None,
+    submod_attrs=None,
+    lazy_submodules=False,
+):
     """Attach lazily loaded submodules, functions, or other attributes.
 
     Typically, modules import submodules and attributes as follows::
@@ -50,6 +55,10 @@ def attach(package_name, submodules=None, submod_attrs=None):
     submod_attrs : dict
         Dictionary of submodule -> list of attributes / functions.
         These attributes are imported as they are used.
+    lazy_submodules : bool
+        Whether to lazily load submodules. If set to `True`, submodules are
+        returned as lazy proxies. Note that attribute access from
+        submod_attrs will trigger the import of the submodule.
 
     Returns
     -------
@@ -72,7 +81,11 @@ def attach(package_name, submodules=None, submod_attrs=None):
 
     def __getattr__(name):
         if name in submodules:
-            return importlib.import_module(f"{package_name}.{name}")
+            submod_path = f"{package_name}.{name}"
+            if lazy_submodules:
+                return load(submod_path, suppress_warning=True)
+            else:
+                return importlib.import_module(submod_path)
         elif name in attr_to_modules:
             submod_path = f"{package_name}.{attr_to_modules[name]}"
             submod = importlib.import_module(submod_path)

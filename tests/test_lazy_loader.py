@@ -86,7 +86,8 @@ def test_lazy_import_nonbuiltins():
             sp.pi
 
 
-def test_lazy_attach():
+@pytest.mark.parametrize("lazy_submodules", [False, True])
+def test_lazy_attach(lazy_submodules):
     name = "mymod"
     submods = ["mysubmodule", "anothersubmodule"]
     myall = {"not_real_submod": ["some_var_or_func"]}
@@ -96,8 +97,12 @@ def test_lazy_attach():
         "name": name,
         "submods": submods,
         "myall": myall,
+        "lazy_submods": lazy_submodules,
     }
-    s = "__getattr__, __lazy_dir__, __all__ = attach(name, submods, myall)"
+    s = (
+        "__getattr__, __lazy_dir__, __all__ = "
+        "attach(name, submods, myall, lazy_submodules=lazy_submods)"
+    )
 
     exec(s, {}, locls)
     expected = {
@@ -105,6 +110,7 @@ def test_lazy_attach():
         "name": name,
         "submods": submods,
         "myall": myall,
+        "lazy_submods": lazy_submodules,
         "__getattr__": None,
         "__lazy_dir__": None,
         "__all__": None,
@@ -135,9 +141,13 @@ def test_lazy_attach_noattrs():
     assert all_ == sorted(submods)
 
 
-def test_lazy_attach_returns_copies():
+@pytest.mark.parametrize("lazy_submodules", [False, True])
+def test_lazy_attach_returns_copies(lazy_submodules):
     _get, _dir, _all = lazy.attach(
-        __name__, ["my_submodule", "another_submodule"], {"foo": ["some_attr"]}
+        __name__,
+        ["my_submodule", "another_submodule"],
+        {"foo": ["some_attr"]},
+        lazy_submodules=lazy_submodules,
     )
     assert _dir() is not _dir()
     assert _dir() == _all

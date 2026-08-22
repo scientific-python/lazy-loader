@@ -5,20 +5,18 @@ lazy_loader
 Makes it easy to load subpackages and functions on demand.
 """
 
-import ast
+import _thread
 import importlib
-import importlib.util
 import os
 import sys
-import threading
 import types
-import warnings
 
 __version__ = "0.6rc0.dev0"
 __all__ = ["attach", "attach_stub", "load"]
 
 
-threadlock = threading.Lock()
+# Same lock type as threading.Lock(), without the threading import cost
+threadlock = _thread.allocate_lock()
 
 
 def attach(package_name, submodules=None, submod_attrs=None):
@@ -72,22 +70,22 @@ def attach(package_name, submodules=None, submod_attrs=None):
 
     def __getattr__(name):
         if name in submodules:
-            return importlib.import_module(f"{package_name}.{name}")
+            attr = importlib.import_module(f"{package_name}.{name}")
         elif name in attr_to_modules:
             submod_path = f"{package_name}.{attr_to_modules[name]}"
             submod = importlib.import_module(submod_path)
             attr = getattr(submod, name)
-
-            # If the attribute lives in a file (module) with the same
-            # name as the attribute, ensure that the attribute and *not*
-            # the module is accessible on the package.
-            if name == attr_to_modules[name]:
-                pkg = sys.modules[package_name]
-                pkg.__dict__[name] = attr
-
-            return attr
         else:
             raise AttributeError(f"No {package_name} attribute {name}")
+
+        # Cache the resolved value on the package so that subsequent
+        # accesses bypass __getattr__; this also ensures an attribute
+        # shadows a same-named submodule.
+        pkg = sys.modules.get(package_name)
+        if pkg is not None:
+            pkg.__dict__[name] = attr
+
+        return attr
 
     def __dir__():
         return __all__.copy()
@@ -191,7 +189,11 @@ def load(fullname, *, require=None, error_on_import=False, suppress_warning=Fals
         if have_module and require is None:
             return module
 
+        import importlib.util
+
         if not suppress_warning and "." in fullname:
+            import warnings
+
             msg = (
                 "subpackages can technically be lazily loaded, but it causes the "
                 "package to be eagerly loaded even if it is already lazily loaded. "
@@ -276,31 +278,6 @@ def _check_requirement(require: str) -> bool:
     )
 
 
-class _StubVisitor(ast.NodeVisitor):
-    """AST visitor to parse a stub file for submodules and submod_attrs."""
-
-    def __init__(self):
-        self._submodules = set()
-        self._submod_attrs = {}
-
-    def visit_ImportFrom(self, node: ast.ImportFrom):
-        if node.level != 1:
-            raise ValueError(
-                "Only within-module imports are supported (`from .* import`)"
-            )
-        if node.module:
-            attrs: list = self._submod_attrs.setdefault(node.module, [])
-            aliases = [alias.name for alias in node.names]
-            if "*" in aliases:
-                raise ValueError(
-                    "lazy stub loader does not support star import "
-                    f"`from {node.module} import *`"
-                )
-            attrs.extend(aliases)
-        else:
-            self._submodules.update(alias.name for alias in node.names)
-
-
 def attach_stub(package_name: str, filename: str):
     """Attach lazily loaded submodules, functions from a type stub.
 
@@ -327,6 +304,32 @@ def attach_stub(package_name: str, filename: str):
         If a stub file is not found for `filename`, or if the stubfile is formmated
         incorrectly (e.g. if it contains an relative import from outside of the module)
     """
+    import ast
+
+    class _StubVisitor(ast.NodeVisitor):
+        """AST visitor to parse a stub file for submodules and submod_attrs."""
+
+        def __init__(self):
+            self._submodules = set()
+            self._submod_attrs = {}
+
+        def visit_ImportFrom(self, node: ast.ImportFrom):
+            if node.level != 1:
+                raise ValueError(
+                    "Only within-module imports are supported (`from .* import`)"
+                )
+            if node.module:
+                attrs: list = self._submod_attrs.setdefault(node.module, [])
+                aliases = [alias.name for alias in node.names]
+                if "*" in aliases:
+                    raise ValueError(
+                        "lazy stub loader does not support star import "
+                        f"`from {node.module} import *`"
+                    )
+                attrs.extend(aliases)
+            else:
+                self._submodules.update(alias.name for alias in node.names)
+
     stubfile = (
         filename if filename.endswith("i") else f"{os.path.splitext(filename)[0]}.pyi"
     )

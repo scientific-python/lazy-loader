@@ -178,6 +178,76 @@ def test_attach_same_module_and_attr_name(clean_fake_pkg, eager_import):
         assert isinstance(some_func, types.FunctionType)
 
 
+NATIVE_LAZY_IMPORTS = sys.version_info >= (3, 15)
+
+
+def test_attach_native_proxies(clean_fake_pkg):
+    from tests import fake_pkg
+
+    if NATIVE_LAZY_IMPORTS:
+        # Names are bound in the package namespace as native lazy proxies
+        assert "some_func" in vars(fake_pkg)
+        assert type(vars(fake_pkg)["some_func"]).__name__ == "lazy_import"
+    else:
+        # The classic mechanism leaves names unbound until first access
+        assert "some_func" not in vars(fake_pkg)
+
+    # Either way, nothing is imported until first attribute access
+    assert "tests.fake_pkg.some_func" not in sys.modules
+    assert isinstance(fake_pkg.some_func, types.FunctionType)
+    assert "tests.fake_pkg.some_func" in sys.modules
+
+
+def test_attach_native_keeps_existing_bindings():
+    # A name already bound in the package namespace shadows the lazily
+    # attached one, on all Python versions.
+    name = "lazy_loader_test_existing_pkg"
+    mod = types.ModuleType(name)
+    mod.some_attr = "sentinel"
+    sys.modules[name] = mod
+    try:
+        getattr_, _, all_ = lazy.attach(
+            name, submod_attrs={"sub": ["some_attr", "other_attr"]}
+        )
+        assert mod.some_attr == "sentinel"
+        assert all_ == ["other_attr", "some_attr"]
+        if NATIVE_LAZY_IMPORTS:
+            assert type(vars(mod)["other_attr"]).__name__ == "lazy_import"
+        # Unknown names raise AttributeError through the returned __getattr__
+        with pytest.raises(AttributeError):
+            getattr_("unknown_attr")
+    finally:
+        del sys.modules[name]
+
+
+def test_attach_rejects_non_identifier_names():
+    # Names that are not identifiers must never reach the generated import
+    # statements of the native (PEP 810) path; the classic __getattr__
+    # mechanism handles them as plain strings.
+    name = "lazy_loader_test_nonidentifier_pkg"
+    mod = types.ModuleType(name)
+    sys.modules[name] = mod
+    try:
+        evil = "nosuchmod import x\ninjected = 1\nlazy from victim.nosuchmod"
+        getattr_, _, _ = lazy.attach(name, submod_attrs={evil: ["x"]})
+        assert "injected" not in vars(mod)
+        assert "x" not in vars(mod)
+        with pytest.raises(ImportError):
+            getattr_("x")
+    finally:
+        del sys.modules[name]
+
+
+def test_attach_falls_back_without_module():
+    # attach() with a package name that is not in sys.modules cannot bind
+    # native proxies and must keep the classic __getattr__ mechanism.
+    getattr_, _, _ = lazy.attach(
+        "lazy_loader_test_not_a_module", submod_attrs={"sub": ["some_attr"]}
+    )
+    with pytest.raises(ImportError):
+        getattr_("some_attr")
+
+
 FAKE_STUB = """
 from . import rank
 from ._gaussian import gaussian

@@ -77,6 +77,23 @@ from .edges import (sobel, scharr, prewitt, roberts,
 
 Except that all subpackages (such as `rank`) and functions (such as `sobel`) are loaded upon access.
 
+### Native lazy imports on Python 3.15+
+
+Python 3.15 introduced native lazy imports
+([PEP 810](https://peps.python.org/pep-0810/)). On 3.15 and newer,
+`lazy.attach` (and `lazy.attach_stub`) automatically delegates to this
+mechanism: attached names are bound in the package namespace as native
+lazy proxies, which the interpreter resolves—thread-safely—on first
+access. No code changes are needed, and the behavior is the same, with
+one visible difference: attached names appear in the package's
+`__dict__` (as proxies) before first access, instead of materializing
+on first access.
+
+Note that `lazy.load` continues to use its own proxy mechanism on all
+Python versions, since PEP 810 proxies only resolve when accessed
+through a module namespace. In code that only runs on Python 3.15+, you
+can use a plain `lazy import numpy` statement instead of `lazy.load`.
+
 ### Type checkers
 
 Static type checkers and IDEs cannot infer type information from

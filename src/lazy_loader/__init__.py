@@ -20,6 +20,61 @@ __all__ = ["attach", "attach_stub", "load"]
 
 threadlock = threading.Lock()
 
+# PEP 810 explicit lazy imports, available from Python 3.15
+_NATIVE_LAZY_IMPORTS = sys.version_info >= (3, 15)
+
+
+def _attach_native(package_name, submodules, submod_attrs):
+    """Bind native lazy import proxies (PEP 810) in the package namespace.
+
+    Names already bound in the package namespace are left untouched.
+    Returns False if the caller should fall back to the classic
+    ``__getattr__``-based mechanism.
+    """
+    package = sys.modules.get(package_name)
+    if package is None:
+        # Not inside the package's import; cannot bind proxies in its
+        # namespace.
+        return False
+
+    # Since the names are embedded in generated import statements below,
+    # ensure they are identifiers and not arbitrary code.
+    names = [package_name, *submodules, *submod_attrs]
+    names.extend(attr for attrs in submod_attrs.values() for attr in attrs)
+    if not all(part.isidentifier() for name in names for part in name.split(".")):
+        return False
+
+    pkg_dict = vars(package)
+
+    # Absolute imports, like the classic __getattr__ mechanism uses, so that
+    # no relative-import resolution (via __spec__ or __package__) is needed.
+    lines = [
+        f"lazy from {package_name} import {name}"
+        for name in sorted(submodules)
+        if name not in pkg_dict
+    ]
+    for mod, attrs in submod_attrs.items():
+        new_attrs = [a for a in attrs if a not in pkg_dict and a not in submodules]
+        if new_attrs:
+            lines.append(
+                f"lazy from {package_name}.{mod} import {', '.join(new_attrs)}"
+            )
+
+    if not lines:
+        return True
+
+    try:
+        code = compile(
+            "\n".join(lines), f"<lazy_loader.attach {package_name!r}>", "exec"
+        )
+    except SyntaxError:
+        # A submodule or attribute name that is not expressible as import
+        # syntax (e.g., a reserved keyword).
+        return False
+
+    exec(code, pkg_dict)
+    return True
+
 
 def attach(package_name, submodules=None, submod_attrs=None):
     """Attach lazily loaded submodules, functions, or other attributes.
@@ -40,6 +95,9 @@ def attach(package_name, submodules=None, submod_attrs=None):
       __getattr__, __dir__, __all__ = lazy.attach(
           __name__, ["mysubmodule", "anothersubmodule"], {"foo": ["someattr"]}
       )
+
+    On Python 3.15 and newer, this delegates to the interpreter's native
+    lazy import mechanism (PEP 810) whenever possible.
 
     Parameters
     ----------
@@ -96,6 +154,14 @@ def attach(package_name, submodules=None, submod_attrs=None):
     if eager_import:
         for attr in set(attr_to_modules.keys()) | submodules:
             __getattr__(attr)
+    elif _NATIVE_LAZY_IMPORTS:
+        # On Python 3.15+, delegate to native lazy imports (PEP 810) where
+        # possible.  The proxies are bound directly in the package namespace,
+        # so the returned __getattr__ is then only consulted for unknown
+        # names.  If native binding is not possible (e.g. `package_name` is
+        # not an imported module), the classic __getattr__ mechanism above
+        # provides the lazy behavior as before.
+        _attach_native(package_name, submodules, submod_attrs)
 
     return __getattr__, __dir__, __all__.copy()
 

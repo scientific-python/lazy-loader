@@ -13,9 +13,9 @@ import lazy_loader as lazy
 @pytest.fixture
 def clean_fake_pkg():
     yield
-    sys.modules.pop("tests.fake_pkg.some_func", None)
-    sys.modules.pop("tests.fake_pkg", None)
-    sys.modules.pop("tests", None)
+    for name in [*sys.modules]:
+        if name == "tests" or name.startswith("tests.fake_pkg"):
+            del sys.modules[name]
 
 
 @pytest.mark.parametrize("attempt", [1, 2])
@@ -176,6 +176,30 @@ def test_attach_same_module_and_attr_name(clean_fake_pkg, eager_import):
         from tests.fake_pkg.some_func import some_func
 
         assert isinstance(some_func, types.FunctionType)
+
+
+def test_attach_submodule_does_not_shadow_function(clean_fake_pkg):
+    # Where `some_func` is defined in module `some_func`: when
+    # submodule is imported before the function has been resolved, the
+    # import machinery tries to set the package `__dict__` to point to
+    # the module.  We need to prevent this, otherwise we cannot
+    # access the function.
+    import tests.fake_pkg.some_func  # noqa: F401
+    from tests import fake_pkg
+
+    assert isinstance(fake_pkg.some_func, types.FunctionType)
+
+
+def test_attach_subpackage_does_not_shadow_function(clean_fake_pkg):
+    # Where function `x` is defined in `x/sub.py`, i.e. a module
+    # nested inside a subpackage that shares its name with the
+    # function: importing `x.sub` causes the import machinery to set
+    # the package attribute `x` to the `x` subpackage, which would
+    # otherwise shadow the `x` function on subsequent access.
+    from tests import fake_pkg_submodule
+
+    assert isinstance(fake_pkg_submodule.x, types.FunctionType)
+    assert isinstance(fake_pkg_submodule.x, types.FunctionType)
 
 
 FAKE_STUB = """

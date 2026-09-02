@@ -13,9 +13,9 @@ import lazy_loader as lazy
 @pytest.fixture
 def clean_fake_pkg():
     yield
-    sys.modules.pop("tests.fake_pkg.some_func", None)
-    sys.modules.pop("tests.fake_pkg", None)
-    sys.modules.pop("tests", None)
+    for name in [*sys.modules]:
+        if name == "tests" or name.startswith("tests.fake_pkg"):
+            del sys.modules[name]
 
 
 @pytest.mark.parametrize("attempt", [1, 2])
@@ -187,6 +187,17 @@ def test_attach_caches_resolved_attrs(clean_fake_pkg):
     # do not go through __getattr__ again
     assert vars(fake_pkg)["aux_func"] is aux_func
     assert fake_pkg.aux_func is aux_func
+
+
+def test_attach_subpackage_does_not_shadow_function(clean_fake_pkg):
+    # Where function `x` is defined in `x/sub.py`, i.e. a module
+    # nested inside a subpackage that shares its name with the
+    # function: importing `x.sub` causes the import machinery to set
+    # the package attribute `x` to the `x` subpackage, which would
+    # otherwise shadow the `x` function on subsequent access.
+    from tests import fake_pkg_submodule
+
+    assert isinstance(fake_pkg_submodule.x, types.FunctionType)
 
 
 FAKE_STUB = """

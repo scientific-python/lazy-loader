@@ -23,20 +23,20 @@ repos:
       - id: check-added-large-files
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: 14abee445aea04b39069c19b4bd54efff6775819 # frozen: v3.7.4
+    rev: 39e2973981e6d2f9b6c543b0086a2d2393abdc89  # frozen: v3.9.4
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml|toml)
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 5ba58aca0bd5bc7c0e1c0fc45af2e88d6a2bde83 # frozen: v0.14.10
+    rev: c59bba8fb259db0fec2bbb77ad8ba51ea7341b56  # frozen: v0.15.20
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes", "--exit-non-zero-on-fix"]
       - id: ruff-format
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "63c8f8312b7559622c0d82815639671ae42132ac" # frozen: v2.4.1
+    rev: "2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a"  # frozen: v2.4.2
     hooks:
       - id: codespell

@@ -178,16 +178,15 @@ def test_attach_same_module_and_attr_name(clean_fake_pkg, eager_import):
         assert isinstance(some_func, types.FunctionType)
 
 
-def test_attach_submodule_does_not_shadow_function(clean_fake_pkg):
-    # Where `some_func` is defined in module `some_func`: when
-    # submodule is imported before the function has been resolved, the
-    # import machinery tries to set the package `__dict__` to point to
-    # the module.  We need to prevent this, otherwise we cannot
-    # access the function.
-    import tests.fake_pkg.some_func  # noqa: F401
+def test_attach_caches_resolved_attrs(clean_fake_pkg):
     from tests import fake_pkg
 
-    assert isinstance(fake_pkg.some_func, types.FunctionType)
+    assert "aux_func" not in vars(fake_pkg)
+    aux_func = fake_pkg.aux_func
+    # The resolved attribute is cached on the package, so later accesses
+    # do not go through __getattr__ again
+    assert vars(fake_pkg)["aux_func"] is aux_func
+    assert fake_pkg.aux_func is aux_func
 
 
 def test_attach_subpackage_does_not_shadow_function(clean_fake_pkg):
@@ -198,7 +197,6 @@ def test_attach_subpackage_does_not_shadow_function(clean_fake_pkg):
     # otherwise shadow the `x` function on subsequent access.
     from tests import fake_pkg_submodule
 
-    assert isinstance(fake_pkg_submodule.x, types.FunctionType)
     assert isinstance(fake_pkg_submodule.x, types.FunctionType)
 
 

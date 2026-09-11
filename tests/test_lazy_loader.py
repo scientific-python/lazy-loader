@@ -13,9 +13,9 @@ import lazy_loader as lazy
 @pytest.fixture
 def clean_fake_pkg():
     yield
-    sys.modules.pop("tests.fake_pkg.some_func", None)
-    sys.modules.pop("tests.fake_pkg", None)
-    sys.modules.pop("tests", None)
+    for name in [*sys.modules]:
+        if name == "tests" or name.startswith("tests.fake_pkg"):
+            del sys.modules[name]
 
 
 @pytest.mark.parametrize("attempt", [1, 2])
@@ -246,6 +246,32 @@ def test_attach_falls_back_without_module():
     )
     with pytest.raises(ImportError):
         getattr_("some_attr")
+
+
+def test_attach_caches_resolved_attrs(clean_fake_pkg):
+    from tests import fake_pkg
+
+    if NATIVE_LAZY_IMPORTS:
+        # Bound as a native lazy proxy, which the interpreter reifies in place
+        assert type(vars(fake_pkg)["aux_func"]).__name__ == "lazy_import"
+    else:
+        assert "aux_func" not in vars(fake_pkg)
+    aux_func = fake_pkg.aux_func
+    # The resolved attribute is cached on the package, so later accesses
+    # do not go through __getattr__ again
+    assert vars(fake_pkg)["aux_func"] is aux_func
+    assert fake_pkg.aux_func is aux_func
+
+
+def test_attach_subpackage_does_not_shadow_function(clean_fake_pkg):
+    # Where function `x` is defined in `x/sub.py`, i.e. a module
+    # nested inside a subpackage that shares its name with the
+    # function: importing `x.sub` causes the import machinery to set
+    # the package attribute `x` to the `x` subpackage, which would
+    # otherwise shadow the `x` function on subsequent access.
+    from tests import fake_pkg_submodule
+
+    assert isinstance(fake_pkg_submodule.x, types.FunctionType)
 
 
 FAKE_STUB = """

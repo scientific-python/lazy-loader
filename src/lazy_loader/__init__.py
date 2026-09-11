@@ -5,20 +5,50 @@ lazy_loader
 Makes it easy to load subpackages and functions on demand.
 """
 
-import ast
+import _thread
 import importlib
-import importlib.util
 import os
 import sys
-import threading
 import types
-import warnings
 
 __version__ = "0.6rc0.dev0"
 __all__ = ["attach", "attach_stub", "load"]
 
 
-threadlock = threading.Lock()
+# Same lock type as threading.Lock(), without the threading import cost
+threadlock = _thread.allocate_lock()
+
+
+class _ShadowGuardModule(types.ModuleType):
+    """Module type to protect function attributes from being overwritten.
+
+    When a function has the same name as the submodule it resides in
+    (e.g. a ``max_tree`` function defined in ``max_tree.py``),
+    importing that submodule causes the import machinery to call
+    ``setattr(pkg, "max_tree", <submodule>)``.  That updates the
+    package ``__dict__``, preventing ``__getattr__`` from ever
+    resolving the name to the function again. The same problem occurs
+    when ``x`` is defined in ``x/sub.py``.
+
+    This subclass suppresses those dictionary updates (only in the
+    shadowing case).
+
+    We track the set of protected names in the ``__lazy_shadowed__``
+    attr.
+
+    """
+
+    def __setattr__(self, name, value):
+        shadowed = self.__dict__.get("__lazy_shadowed__")
+        if (
+            shadowed is not None
+            and name in shadowed
+            # Is it trying to set this attribute to the system module?
+            and value is sys.modules.get(f"{self.__name__}.{name}")
+        ):
+            return
+        super().__setattr__(name, value)
+
 
 # PEP 810 explicit lazy imports, available from Python 3.15
 _NATIVE_LAZY_IMPORTS = sys.version_info >= (3, 15)
@@ -130,25 +160,48 @@ def attach(package_name, submodules=None, submod_attrs=None):
 
     def __getattr__(name):
         if name in submodules:
-            return importlib.import_module(f"{package_name}.{name}")
+            attr = importlib.import_module(f"{package_name}.{name}")
         elif name in attr_to_modules:
             submod_path = f"{package_name}.{attr_to_modules[name]}"
             submod = importlib.import_module(submod_path)
             attr = getattr(submod, name)
-
-            # If the attribute lives in a file (module) with the same
-            # name as the attribute, ensure that the attribute and *not*
-            # the module is accessible on the package.
-            if name == attr_to_modules[name]:
-                pkg = sys.modules[package_name]
-                pkg.__dict__[name] = attr
-
-            return attr
         else:
             raise AttributeError(f"No {package_name} attribute {name}")
 
+        # Cache the resolved value on the package so that subsequent
+        # accesses bypass __getattr__; this also ensures an attribute
+        # shadows a same-named submodule.
+        pkg = sys.modules.get(package_name)
+        if pkg is not None:
+            pkg.__dict__[name] = attr
+
+        return attr
+
     def __dir__():
         return __all__.copy()
+
+    # When a function has the same name as a module the import
+    # machinery needs to load along the way to accessing it
+    # (e.g. `max_tree` from `max_tree.py`, or `x` from `x/sub.py`), a
+    # side-effect of it loading that module is overwriting the package
+    # attribute (so it points to the module, i.e. to `max_tree` or `x`
+    # the module), shadowing the function (see _ShadowGuardModule).
+    #
+    # Record affected cases and, only in those cases, swap in the
+    # guarding module type.
+    shadowed = {
+        attr for attr, mod in attr_to_modules.items() if attr == mod.split(".")[0]
+    }
+    if shadowed:
+        pkg = sys.modules.get(package_name)
+        # Only touch plain package modules (or our own wrapper) --- we
+        # don't want to mess with custom module classes.
+        if type(pkg) in (types.ModuleType, _ShadowGuardModule):
+            pkg.__dict__["__lazy_shadowed__"] = (
+                pkg.__dict__.get("__lazy_shadowed__", set()) | shadowed
+            )
+            if type(pkg) is types.ModuleType:
+                pkg.__class__ = _ShadowGuardModule
 
     eager_import = os.environ.get("EAGER_IMPORT", "") not in ("0", "")
     if eager_import:
@@ -257,7 +310,11 @@ def load(fullname, *, require=None, error_on_import=False, suppress_warning=Fals
         if have_module and require is None:
             return module
 
+        import importlib.util
+
         if not suppress_warning and "." in fullname:
+            import warnings
+
             msg = (
                 "subpackages can technically be lazily loaded, but it causes the "
                 "package to be eagerly loaded even if it is already lazily loaded. "
@@ -342,31 +399,6 @@ def _check_requirement(require: str) -> bool:
     )
 
 
-class _StubVisitor(ast.NodeVisitor):
-    """AST visitor to parse a stub file for submodules and submod_attrs."""
-
-    def __init__(self):
-        self._submodules = set()
-        self._submod_attrs = {}
-
-    def visit_ImportFrom(self, node: ast.ImportFrom):
-        if node.level != 1:
-            raise ValueError(
-                "Only within-module imports are supported (`from .* import`)"
-            )
-        if node.module:
-            attrs: list = self._submod_attrs.setdefault(node.module, [])
-            aliases = [alias.name for alias in node.names]
-            if "*" in aliases:
-                raise ValueError(
-                    "lazy stub loader does not support star import "
-                    f"`from {node.module} import *`"
-                )
-            attrs.extend(aliases)
-        else:
-            self._submodules.update(alias.name for alias in node.names)
-
-
 def attach_stub(package_name: str, filename: str):
     """Attach lazily loaded submodules, functions from a type stub.
 
@@ -393,6 +425,32 @@ def attach_stub(package_name: str, filename: str):
         If a stub file is not found for `filename`, or if the stubfile is formmated
         incorrectly (e.g. if it contains an relative import from outside of the module)
     """
+    import ast
+
+    class _StubVisitor(ast.NodeVisitor):
+        """AST visitor to parse a stub file for submodules and submod_attrs."""
+
+        def __init__(self):
+            self._submodules = set()
+            self._submod_attrs = {}
+
+        def visit_ImportFrom(self, node: ast.ImportFrom):
+            if node.level != 1:
+                raise ValueError(
+                    "Only within-module imports are supported (`from .* import`)"
+                )
+            if node.module:
+                attrs: list = self._submod_attrs.setdefault(node.module, [])
+                aliases = [alias.name for alias in node.names]
+                if "*" in aliases:
+                    raise ValueError(
+                        "lazy stub loader does not support star import "
+                        f"`from {node.module} import *`"
+                    )
+                attrs.extend(aliases)
+            else:
+                self._submodules.update(alias.name for alias in node.names)
+
     stubfile = (
         filename if filename.endswith("i") else f"{os.path.splitext(filename)[0]}.pyi"
     )

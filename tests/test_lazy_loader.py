@@ -238,6 +238,23 @@ def test_attach_rejects_non_identifier_names():
         del sys.modules[name]
 
 
+def test_attach_rejects_keyword_names():
+    # Keywords are identifiers, but not valid in import statements, so the
+    # generated native (PEP 810) code fails to compile and attach() must fall
+    # back to the classic __getattr__ mechanism.
+    name = "lazy_loader_test_keyword_pkg"
+    mod = types.ModuleType(name)
+    sys.modules[name] = mod
+    try:
+        getattr_, _, all_ = lazy.attach(name, submod_attrs={"sub": ["class"]})
+        assert all_ == ["class"]
+        assert "class" not in vars(mod)
+        with pytest.raises(ImportError):
+            getattr_("class")
+    finally:
+        del sys.modules[name]
+
+
 def test_attach_falls_back_without_module():
     # attach() with a package name that is not in sys.modules cannot bind
     # native proxies and must keep the classic __getattr__ mechanism.

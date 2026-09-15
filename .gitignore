@@ -10,6 +10,10 @@ lazy_loader.egg-info/
 
 # Unit test / coverage reports
 .pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 
 # General
 .DS_Store

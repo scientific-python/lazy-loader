@@ -79,20 +79,21 @@ Except that all subpackages (such as `rank`) and functions (such as `sobel`) are
 
 ### Native lazy imports on Python 3.15+
 
-Python 3.15 introduced native lazy imports
-([PEP 810](https://peps.python.org/pep-0810/)). On 3.15 and newer,
-`lazy.attach` (and `lazy.attach_stub`) automatically delegates to this
-mechanism: attached names are bound in the package namespace as native
-lazy proxies, which the interpreter resolves—thread-safely—on first
-access. No code changes are needed, and the behavior is the same, with
-one visible difference: attached names appear in the package's
-`__dict__` (as proxies) before first access, instead of materializing
-on first access.
+On Python 3.15 and newer, `lazy.attach` and `lazy.attach_stub` use the
+interpreter's own lazy imports ([PEP 810](https://peps.python.org/pep-0810/))
+when available. No code changes are needed, but two behaviors differ:
 
-Note that `lazy.load` continues to use its own proxy mechanism on all
-Python versions, since PEP 810 proxies only resolve when accessed
-through a module namespace. In code that only runs on Python 3.15+, you
-can use a plain `lazy import numpy` statement instead of `lazy.load`.
+- Attached names are bound in the package `__dict__` as lazy proxies from the
+  start, instead of appearing only once accessed. Code that walks
+  `vars(package)` rather than using `getattr` now sees proxy objects.
+- An attached name that its submodule does not define raises `ImportError` on
+  access, where it used to raise `AttributeError`. Such a name is always a
+  mistake in the `submod_attrs` list or the stub file, which `hasattr` used to
+  hide by reporting the name as simply absent.
+
+`lazy.load` is unchanged on all versions, since PEP 810 proxies only resolve
+when accessed through a module namespace. In code that only runs on 3.15+, a
+plain `lazy import numpy` statement replaces it.
 
 ### Type checkers
 

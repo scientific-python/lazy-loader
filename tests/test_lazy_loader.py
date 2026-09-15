@@ -178,7 +178,7 @@ def test_attach_same_module_and_attr_name(clean_fake_pkg, eager_import):
         assert isinstance(some_func, types.FunctionType)
 
 
-NATIVE_LAZY_IMPORTS = sys.version_info >= (3, 15)
+NATIVE_LAZY_IMPORTS = lazy._NATIVE_LAZY_IMPORTS
 
 
 def test_attach_native_proxies(clean_fake_pkg):
@@ -251,6 +251,32 @@ def test_attach_rejects_keyword_names():
         assert "class" not in vars(mod)
         with pytest.raises(ImportError):
             getattr_("class")
+    finally:
+        del sys.modules[name]
+
+
+def test_native_lazy_imports_detection_matches_syntax_support():
+    # Detection must report on the interpreter in front of us, not on a
+    # version number: PEP 810 syntax is absent from 3.15.0a6 but present
+    # in 3.15.0rc2.
+    try:
+        compile("lazy import sys", "<probe>", "exec")
+    except SyntaxError:
+        assert not NATIVE_LAZY_IMPORTS
+    else:
+        assert NATIVE_LAZY_IMPORTS
+
+
+def test_attach_falls_back_without_native_support(monkeypatch):
+    # Where the syntax is unavailable, attach() keeps the classic
+    # __getattr__ mechanism rather than binding anything up front.
+    monkeypatch.setattr(lazy, "_NATIVE_LAZY_IMPORTS", False)
+    name = "lazy_loader_test_disabled_pkg"
+    mod = types.ModuleType(name)
+    sys.modules[name] = mod
+    try:
+        lazy.attach(name, submod_attrs={"sub": ["some_attr"]})
+        assert "some_attr" not in vars(mod)
     finally:
         del sys.modules[name]
 

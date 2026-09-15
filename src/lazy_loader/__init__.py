@@ -50,8 +50,14 @@ class _ShadowGuardModule(types.ModuleType):
         super().__setattr__(name, value)
 
 
-# PEP 810 explicit lazy imports, available from Python 3.15
-_NATIVE_LAZY_IMPORTS = sys.version_info >= (3, 15)
+# PEP 810 explicit lazy imports.  The syntax is not available on every 3.15
+# build, so detect it rather than comparing version numbers.
+try:
+    compile("lazy import sys", "<lazy_loader probe>", "exec")
+except SyntaxError:
+    _NATIVE_LAZY_IMPORTS = False
+else:
+    _NATIVE_LAZY_IMPORTS = True
 
 
 def _attach_native(package_name, submodules, submod_attrs):

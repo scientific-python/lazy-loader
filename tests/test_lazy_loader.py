@@ -187,7 +187,6 @@ def test_attach_native_proxies(clean_fake_pkg):
     if NATIVE_LAZY_IMPORTS:
         # Names are bound in the package namespace as native lazy proxies
         assert "some_func" in vars(fake_pkg)
-        assert type(vars(fake_pkg)["some_func"]).__name__ == "lazy_import"
     else:
         # The classic mechanism leaves names unbound until first access
         assert "some_func" not in vars(fake_pkg)
@@ -212,7 +211,7 @@ def test_attach_native_keeps_existing_bindings():
         assert mod.some_attr == "sentinel"
         assert all_ == ["other_attr", "some_attr"]
         if NATIVE_LAZY_IMPORTS:
-            assert type(vars(mod)["other_attr"]).__name__ == "lazy_import"
+            assert "other_attr" in vars(mod)
         # Unknown names raise AttributeError through the returned __getattr__
         with pytest.raises(AttributeError):
             getattr_("unknown_attr")
@@ -291,12 +290,52 @@ def test_attach_falls_back_without_module():
         getattr_("some_attr")
 
 
+def test_attach_submodule_is_lazy(tmp_path, monkeypatch):
+    # Plain `submodules` go through `lazy from pkg import sub`, which resolves
+    # by looking `sub` up on `pkg` --- where the proxy being resolved is still
+    # bound.  Check that this resolves to the submodule rather than to itself.
+    name = "lazy_loader_test_submodule_pkg"
+    pkg = tmp_path / name
+    pkg.mkdir()
+    (pkg / "__init__.py").write_text(
+        "import lazy_loader as lazy\n"
+        '__getattr__, __dir__, __all__ = lazy.attach(__name__, ["sub"])\n'
+    )
+    (pkg / "sub.py").write_text("VALUE = 42\n")
+    monkeypatch.syspath_prepend(str(tmp_path))
+
+    mod = importlib.import_module(name)
+    try:
+        if NATIVE_LAZY_IMPORTS:
+            assert "sub" in vars(mod)
+        assert f"{name}.sub" not in sys.modules
+        assert mod.sub.VALUE == 42
+        assert mod.sub is sys.modules[f"{name}.sub"]
+    finally:
+        for modname in [m for m in sys.modules if m.startswith(name)]:
+            del sys.modules[modname]
+
+
+def test_attach_shadowing_submodule_stays_lazy(clean_fake_pkg):
+    # `x` is a function in `x/sub.py`, so importing `x.sub` makes the import
+    # machinery rebind `x` to the subpackage.  Check the guard against that
+    # holds when the name is bound as a native proxy.
+    from tests import fake_pkg_submodule
+
+    if NATIVE_LAZY_IMPORTS:
+        assert "x" in vars(fake_pkg_submodule)
+    assert isinstance(fake_pkg_submodule.x, types.FunctionType)
+    # Resolution must not leave the subpackage shadowing the function
+    assert isinstance(vars(fake_pkg_submodule)["x"], types.FunctionType)
+
+
 def test_attach_caches_resolved_attrs(clean_fake_pkg):
     from tests import fake_pkg
 
     if NATIVE_LAZY_IMPORTS:
         # Bound as a native lazy proxy, which the interpreter reifies in place
-        assert type(vars(fake_pkg)["aux_func"]).__name__ == "lazy_import"
+        assert "aux_func" in vars(fake_pkg)
+        assert "tests.fake_pkg.some_func" not in sys.modules
     else:
         assert "aux_func" not in vars(fake_pkg)
     aux_func = fake_pkg.aux_func

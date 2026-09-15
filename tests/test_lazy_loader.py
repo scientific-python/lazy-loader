@@ -212,6 +212,8 @@ def test_attach_native_keeps_existing_bindings():
         assert all_ == ["other_attr", "some_attr"]
         if NATIVE_LAZY_IMPORTS:
             assert "other_attr" in vars(mod)
+        # Binding the proxies must not leave __builtins__ behind
+        assert "__builtins__" not in vars(mod)
         # Unknown names raise AttributeError through the returned __getattr__
         with pytest.raises(AttributeError):
             getattr_("unknown_attr")

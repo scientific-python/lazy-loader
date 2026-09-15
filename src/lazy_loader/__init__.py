@@ -63,27 +63,30 @@ else:
 def _attach_native(package_name, submodules, submod_attrs):
     """Bind native lazy import proxies (PEP 810) in the package namespace.
 
-    Names already bound in the package namespace are left untouched.
-    Returns False if the caller should fall back to the classic
-    ``__getattr__``-based mechanism.
+    Names already bound in the package namespace are left untouched.  Where
+    proxies cannot be bound, the names stay unbound and the caller's
+    ``__getattr__`` provides the lazy behavior instead.
     """
     package = sys.modules.get(package_name)
     if package is None:
         # Not inside the package's import; cannot bind proxies in its
         # namespace.
-        return False
+        return
 
     # Since the names are embedded in generated import statements below,
     # ensure they are identifiers and not arbitrary code.
     names = [package_name, *submodules, *submod_attrs]
     names.extend(attr for attrs in submod_attrs.values() for attr in attrs)
     if not all(part.isidentifier() for name in names for part in name.split(".")):
-        return False
+        return
 
     pkg_dict = vars(package)
 
     # Absolute imports, like the classic __getattr__ mechanism uses, so that
     # no relative-import resolution (via __spec__ or __package__) is needed.
+    # `submodules` is a set, so sort it for a reproducible statement order;
+    # `submod_attrs` keeps its own order, under which a name listed for
+    # several modules resolves to the last one, as in __getattr__.
     lines = [
         f"lazy from {package_name} import {name}"
         for name in sorted(submodules)
@@ -97,7 +100,7 @@ def _attach_native(package_name, submodules, submod_attrs):
             )
 
     if not lines:
-        return True
+        return
 
     try:
         code = compile(
@@ -106,10 +109,14 @@ def _attach_native(package_name, submodules, submod_attrs):
     except SyntaxError:
         # A submodule or attribute name that is not expressible as import
         # syntax (e.g., a reserved keyword).
-        return False
+        return
 
+    # exec() inserts __builtins__ into the namespace it is given; leave the
+    # package namespace as it was found.
+    had_builtins = "__builtins__" in pkg_dict
     exec(code, pkg_dict)
-    return True
+    if not had_builtins:
+        pkg_dict.pop("__builtins__", None)
 
 
 def attach(package_name, submodules=None, submod_attrs=None):

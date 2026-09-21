@@ -29,13 +29,10 @@ These versions [avoid](https://github.com/python/cpython/pull/114781) a [known r
 Consider the `__init__.py` from [scikit-image](https://scikit-image.org):
 
 ```python
-subpackages = [
-    ...,
-    'filters',
-    ...
-]
+subpackages = [..., "filters", ...]
 
 import lazy_loader as lazy
+
 __getattr__, __dir__, _ = lazy.attach(__name__, subpackages)
 ```
 
@@ -43,6 +40,7 @@ You can now do:
 
 ```python
 import skimage as ski
+
 ski.filters.gaussian(...)
 ```
 
@@ -57,12 +55,11 @@ from ..util import lazy
 
 __getattr__, __dir__, __all__ = lazy.attach(
     __name__,
-    submodules=['rank'],
+    submodules=["rank"],
     submod_attrs={
-        '_gaussian': ['gaussian', 'difference_of_gaussians'],
-        'edges': ['sobel', 'scharr', 'prewitt', 'roberts',
-                  'laplace', 'farid']
-    }
+        "_gaussian": ["gaussian", "difference_of_gaussians"],
+        "edges": ["sobel", "scharr", "prewitt", "roberts", "laplace", "farid"],
+    },
 )
 ```
 
@@ -71,8 +68,7 @@ The above is equivalent to:
 ```python
 from . import rank
 from ._gaussian import gaussian, difference_of_gaussians
-from .edges import (sobel, scharr, prewitt, roberts,
-                    laplace, farid)
+from .edges import sobel, scharr, prewitt, roberts, laplace, farid
 ```
 
 Except that all subpackages (such as `rank`) and functions (such as `sobel`) are loaded upon access.
@@ -86,6 +82,7 @@ files) with `lazy.attach_stub`:
 
 ```python
 import lazy_loader as lazy
+
 __getattr__, __dir__, _ = lazy.attach_stub(__name__, "subpackages.pyi")
 ```
 
@@ -109,7 +106,7 @@ internal imports.
 Use `lazy.load` to lazily import external libraries:
 
 ```python
-sp = lazy.load('scipy')  # `sp` will only be loaded when accessed
+sp = lazy.load("scipy")  # `sp` will only be loaded when accessed
 sp.linalg.norm(...)
 ```
 
@@ -121,7 +118,7 @@ discouraged._
 You can ask `lazy.load` to raise import errors as soon as it is called:
 
 ```python
-linalg = lazy.load('scipy.linalg', error_on_import=True)
+linalg = lazy.load("scipy.linalg", error_on_import=True)
 ```
 
 #### Optional requirements

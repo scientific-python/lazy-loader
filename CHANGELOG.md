@@ -1,3 +1,38 @@
+# lazy-loader 0.6
+
+We're happy to announce the release of lazy-loader 0.6!
+
+## Enhancements
+
+- improve perf, dogfood ([#173](https://github.com/scientific-python/lazy-loader/pull/173)).
+
+## Bug Fixes
+
+- Guard against import machinery masking out attributes ([#171](https://github.com/scientific-python/lazy-loader/pull/171)).
+
+## Maintenance
+
+- Support for Python 3.15 ([#176](https://github.com/scientific-python/lazy-loader/pull/176)).
+- Update release process ([#177](https://github.com/scientific-python/lazy-loader/pull/177)).
+
+## Contributors
+
+3 authors added to this release (alphabetically):
+
+- [@benedikt-bartscher](https://github.com/benedikt-bartscher)
+- Jarrod Millman ([@jarrodmillman](https://github.com/jarrodmillman))
+- Stefan van der Walt ([@stefanv](https://github.com/stefanv))
+
+4 reviewers added to this release (alphabetically):
+
+- Brigitta Sipőcz ([@bsipocz](https://github.com/bsipocz))
+- Chris Markiewicz ([@effigies](https://github.com/effigies))
+- Jarrod Millman ([@jarrodmillman](https://github.com/jarrodmillman))
+- Stefan van der Walt ([@stefanv](https://github.com/stefanv))
+
+_These lists are automatically generated, and may not be complete or may contain
+duplicates._
+
 # lazy-loader 0.6rc0
 
 We're happy to announce the release of lazy-loader 0.6rc0!
@@ -28,8 +63,7 @@ We're happy to announce the release of lazy-loader 0.6rc0!
 - Chris Markiewicz ([@effigies](https://github.com/effigies))
 - Stefan van der Walt ([@stefanv](https://github.com/stefanv))
 
-_These lists are automatically generated, and may not be complete or may contain
-duplicates._
+_These lists are automatically generated, and may not be complete or may contain duplicates._
 
 # lazy-loader 0.5
 

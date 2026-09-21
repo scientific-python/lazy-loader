@@ -11,7 +11,7 @@ import os
 import sys
 import types
 
-__version__ = "0.6rc1.dev0"
+__version__ = "0.6"
 __all__ = ["attach", "attach_stub", "load"]
 
 

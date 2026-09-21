@@ -178,10 +178,168 @@ def test_attach_same_module_and_attr_name(clean_fake_pkg, eager_import):
         assert isinstance(some_func, types.FunctionType)
 
 
+NATIVE_LAZY_IMPORTS = lazy._NATIVE_LAZY_IMPORTS
+
+
+def test_attach_native_proxies(clean_fake_pkg):
+    from tests import fake_pkg
+
+    if NATIVE_LAZY_IMPORTS:
+        # Names are bound in the package namespace as native lazy proxies
+        assert "some_func" in vars(fake_pkg)
+    else:
+        # The classic mechanism leaves names unbound until first access
+        assert "some_func" not in vars(fake_pkg)
+
+    # Either way, nothing is imported until first attribute access
+    assert "tests.fake_pkg.some_func" not in sys.modules
+    assert isinstance(fake_pkg.some_func, types.FunctionType)
+    assert "tests.fake_pkg.some_func" in sys.modules
+
+
+def test_attach_native_keeps_existing_bindings():
+    # A name already bound in the package namespace shadows the lazily
+    # attached one, on all Python versions.
+    name = "lazy_loader_test_existing_pkg"
+    mod = types.ModuleType(name)
+    mod.some_attr = "sentinel"
+    sys.modules[name] = mod
+    try:
+        getattr_, _, all_ = lazy.attach(
+            name, submod_attrs={"sub": ["some_attr", "other_attr"]}
+        )
+        assert mod.some_attr == "sentinel"
+        assert all_ == ["other_attr", "some_attr"]
+        if NATIVE_LAZY_IMPORTS:
+            assert "other_attr" in vars(mod)
+        # Binding the proxies must not leave __builtins__ behind
+        assert "__builtins__" not in vars(mod)
+        # Unknown names raise AttributeError through the returned __getattr__
+        with pytest.raises(AttributeError):
+            getattr_("unknown_attr")
+    finally:
+        del sys.modules[name]
+
+
+def test_attach_rejects_non_identifier_names():
+    # Names that are not identifiers must never reach the generated import
+    # statements of the native (PEP 810) path; the classic __getattr__
+    # mechanism handles them as plain strings.
+    name = "lazy_loader_test_nonidentifier_pkg"
+    mod = types.ModuleType(name)
+    sys.modules[name] = mod
+    try:
+        evil = "nosuchmod import x\ninjected = 1\nlazy from victim.nosuchmod"
+        getattr_, _, _ = lazy.attach(name, submod_attrs={evil: ["x"]})
+        assert "injected" not in vars(mod)
+        assert "x" not in vars(mod)
+        with pytest.raises(ImportError):
+            getattr_("x")
+    finally:
+        del sys.modules[name]
+
+
+def test_attach_rejects_keyword_names():
+    # Keywords are identifiers, but not valid in import statements, so the
+    # generated native (PEP 810) code fails to compile and attach() must fall
+    # back to the classic __getattr__ mechanism.
+    name = "lazy_loader_test_keyword_pkg"
+    mod = types.ModuleType(name)
+    sys.modules[name] = mod
+    try:
+        getattr_, _, all_ = lazy.attach(name, submod_attrs={"sub": ["class"]})
+        assert all_ == ["class"]
+        assert "class" not in vars(mod)
+        with pytest.raises(ImportError):
+            getattr_("class")
+    finally:
+        del sys.modules[name]
+
+
+def test_native_lazy_imports_detection_matches_syntax_support():
+    # Detection must report on the interpreter in front of us, not on a
+    # version number: PEP 810 syntax is absent from 3.15.0a6 but present
+    # in 3.15.0rc2.
+    try:
+        compile("lazy import sys", "<probe>", "exec")
+    except SyntaxError:
+        assert not NATIVE_LAZY_IMPORTS
+    else:
+        assert NATIVE_LAZY_IMPORTS
+
+
+def test_attach_falls_back_without_native_support(monkeypatch):
+    # Where the syntax is unavailable, attach() keeps the classic
+    # __getattr__ mechanism rather than binding anything up front.
+    monkeypatch.setattr(lazy, "_NATIVE_LAZY_IMPORTS", False)
+    name = "lazy_loader_test_disabled_pkg"
+    mod = types.ModuleType(name)
+    sys.modules[name] = mod
+    try:
+        lazy.attach(name, submod_attrs={"sub": ["some_attr"]})
+        assert "some_attr" not in vars(mod)
+    finally:
+        del sys.modules[name]
+
+
+def test_attach_falls_back_without_module():
+    # attach() with a package name that is not in sys.modules cannot bind
+    # native proxies and must keep the classic __getattr__ mechanism.
+    getattr_, _, _ = lazy.attach(
+        "lazy_loader_test_not_a_module", submod_attrs={"sub": ["some_attr"]}
+    )
+    with pytest.raises(ImportError):
+        getattr_("some_attr")
+
+
+def test_attach_submodule_is_lazy(tmp_path, monkeypatch):
+    # Plain `submodules` go through `lazy from pkg import sub`, which resolves
+    # by looking `sub` up on `pkg` --- where the proxy being resolved is still
+    # bound.  Check that this resolves to the submodule rather than to itself.
+    name = "lazy_loader_test_submodule_pkg"
+    pkg = tmp_path / name
+    pkg.mkdir()
+    (pkg / "__init__.py").write_text(
+        "import lazy_loader as lazy\n"
+        '__getattr__, __dir__, __all__ = lazy.attach(__name__, ["sub"])\n'
+    )
+    (pkg / "sub.py").write_text("VALUE = 42\n")
+    monkeypatch.syspath_prepend(str(tmp_path))
+
+    mod = importlib.import_module(name)
+    try:
+        if NATIVE_LAZY_IMPORTS:
+            assert "sub" in vars(mod)
+        assert f"{name}.sub" not in sys.modules
+        assert mod.sub.VALUE == 42
+        assert mod.sub is sys.modules[f"{name}.sub"]
+    finally:
+        for modname in [m for m in sys.modules if m.startswith(name)]:
+            del sys.modules[modname]
+
+
+def test_attach_shadowing_submodule_stays_lazy(clean_fake_pkg):
+    # `x` is a function in `x/sub.py`, so importing `x.sub` makes the import
+    # machinery rebind `x` to the subpackage.  Check the guard against that
+    # holds when the name is bound as a native proxy.
+    from tests import fake_pkg_submodule
+
+    if NATIVE_LAZY_IMPORTS:
+        assert "x" in vars(fake_pkg_submodule)
+    assert isinstance(fake_pkg_submodule.x, types.FunctionType)
+    # Resolution must not leave the subpackage shadowing the function
+    assert isinstance(vars(fake_pkg_submodule)["x"], types.FunctionType)
+
+
 def test_attach_caches_resolved_attrs(clean_fake_pkg):
     from tests import fake_pkg
 
-    assert "aux_func" not in vars(fake_pkg)
+    if NATIVE_LAZY_IMPORTS:
+        # Bound as a native lazy proxy, which the interpreter reifies in place
+        assert "aux_func" in vars(fake_pkg)
+        assert "tests.fake_pkg.some_func" not in sys.modules
+    else:
+        assert "aux_func" not in vars(fake_pkg)
     aux_func = fake_pkg.aux_func
     # The resolved attribute is cached on the package, so later accesses
     # do not go through __getattr__ again

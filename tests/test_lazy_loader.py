@@ -99,7 +99,7 @@ def test_lazy_attach():
     }
     s = "__getattr__, __lazy_dir__, __all__ = attach(name, submods, myall)"
 
-    exec(s, {}, locls)
+    exec(s, {}, locls)  # noqa: S102
     expected = {
         "attach": lazy.attach,
         "name": name,

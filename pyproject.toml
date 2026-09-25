@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lazy-loader"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [{name = "Scientific Python Developers"}]
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -12,7 +12,6 @@ dynamic = ['version']
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",

@@ -23,14 +23,14 @@ repos:
       - id: check-added-large-files
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: 5c9b20b95f2bc1c4d3d929b83a96d5c96a29e752 # frozen: v3.9.8
+    rev: ef4a397f916211b4a39ccf9d3d9cbb6562157251  # frozen: v3.9.9
     hooks:
       - id: prettier
         files: \.(html|md|yml|yaml|toml)
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 2eeb5678de71a00c0902cbda7105d328432f72cb # frozen: v0.16.8
+    rev: f12be1ebaa5351c1fc76472de98db2c3446c8253  # frozen: v0.16.10
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes", "--exit-non-zero-on-fix"]

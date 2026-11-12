@@ -269,7 +269,7 @@ def load(fullname, *, require=None, error_on_import=False, suppress_warning=Fals
             except ModuleNotFoundError as e:
                 raise ValueError(
                     f"Found module '{fullname}' but cannot test "
-                    "requirement '{require}'. "
+                    f"requirement '{require}'. "
                     "Requirements must match distribution name, not module name."
                 ) from e
 

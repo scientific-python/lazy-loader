@@ -261,7 +261,7 @@ def test_require_kwarg():
 
     # When a module can be loaded but the version can't be checked,
     # raise a ValueError
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="requirement 'somepkg >= 1.0'"):
         lazy.load("math", require="somepkg >= 1.0")
 
 
